@@ -20,13 +20,13 @@ export class TeacherDashComponent {
     { name: 'Computer Science 1', teacher: 'Isla Moore' }
   ];
 
-  students = [
-    { name: 'Brian Smith', status: 'Present', grade: '10' },
-    { name: 'Carlos Rivera', status: 'Absent', grade: '8' },
-    { name: 'Emily Wang', status: 'Present', grade: '9' },
-    { name: 'Grace Kim', status: 'Present', grade: '9.5' },
-    { name: 'Henry Patel', status: 'Absent', grade: '8.5' },
-    { name: 'Jack Nguyen', status: 'Present', grade: '7' }
+  baseStudents = [
+    { name: 'Brian Smith', grade: '10' },
+    { name: 'Carlos Rivera', grade: '8' },
+    { name: 'Emily Wang', grade: '9' },
+    { name: 'Grace Kim', grade: '9.5' },
+    { name: 'Henry Patel', grade: '8.5' },
+    { name: 'Jack Nguyen', grade: '7' }
   ];
 
   myCourses: any[] = [];
@@ -34,15 +34,16 @@ export class TeacherDashComponent {
   selectedGradesCourse: string | null = null;
 
   ngOnInit() {
-    setTimeout(() => {
-      this.myCourses = this.allCourses
-        .filter(course => course.teacher === this.teacherName)
-        .map(course => ({
-          ...course,
-          enrolled: this.students.length, // Fake enrollments
-          students: this.students.map(student => ({ ...student }))
-        }));
-    });
+    this.myCourses = this.allCourses
+      .filter(course => course.teacher === this.teacherName)
+      .map(course => ({
+        ...course,
+        enrolled: this.baseStudents.length,
+        students: this.baseStudents.map(student => ({
+          ...student,
+          attendance: Array(15).fill(false)
+        }))
+      }));
   }
 
   toggleAttendance(courseName: string) {
@@ -53,8 +54,8 @@ export class TeacherDashComponent {
     this.selectedGradesCourse = this.selectedGradesCourse === courseName ? null : courseName;
   }
 
-  markAttendance(course: any, student: any) {
-    student.status = student.status === 'Present' ? 'Absent' : 'Present';
+  toggleSession(course: any, student: any, index: number) {
+    student.attendance[index] = !student.attendance[index];
   }
 
   updateGrade(course: any, student: any, event: any) {
