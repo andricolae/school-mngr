@@ -14,7 +14,7 @@ export class NavbarComponent {
   isStudent = false;
 
   constructor(private router: Router) {
-    this.isAdmin = true;
+    this.isTeacher = true;
   }
 
   navigateTo(route: string) {
