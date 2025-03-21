@@ -1,0 +1,59 @@
+<nav class="bg-blue-600 text-white p-4 shadow-md">
+  <div class="container mx-auto flex justify-between items-center">
+
+    <div class="text-xl font-bold">
+      <button (click)="navigateTo('')"
+        class="text-white font-semibold hover:text-gray-200 transition duration-300">
+        School App
+      </button>
+    </div>
+
+    <div class="flex space-x-2">
+      @if (isAdmin) {
+        <button
+          (click)="navigateTo('/admin/dashboard')"
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300">
+          Admin
+        </button>
+        <button
+          (click)="navigateTo('/admin/courses')"
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300">
+          Manage Courses
+        </button>
+        <button
+          (click)="navigateTo('/admin/users')"
+          class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300">
+          Manage Users
+        </button>
+      }
+      @if (isTeacher) {
+        <button
+          (click)="navigateTo('/teacher/dashboard')"
+          class="px-4 py-2 bg-green-500 hover:bg-green-700 text-white font-medium rounded-lg transition duration-300">
+          Teacher
+        </button>
+      }
+      @if (isStudent) {
+        <button
+          (click)="navigateTo('/student/dashboard')"
+          class="px-4 py-2 bg-yellow-500 hover:bg-yellow-700 text-white font-medium rounded-lg transition duration-300">
+          Student
+        </button>
+      }
+      @if (!isAuthenticated) {
+        <button
+          (click)="navigateTo('/login')"
+          class="px-4 py-2 bg-blue-900 hover:bg-blue-300 text-white font-medium rounded-lg transition duration-300">
+          Login
+        </button>
+      }
+      @if (isAuthenticated) {
+        <button
+          (click)="logout()"
+          class="px-4 py-2 bg-red-500 hover:bg-red-700 text-white font-medium rounded-lg transition duration-300">
+          Logout
+        </button>
+      }
+    </div>
+  </div>
+</nav>
