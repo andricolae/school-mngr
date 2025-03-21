@@ -1,18 +1,85 @@
 <div class="min-h-screen bg-gray-100">
-  <div class="p-6 bg-green-500 text-white font-semibold text-xl">
+  <!-- Header -->
+  <div class="p-3 bg-green-500 text-white font-semibold text-lg md:text-center">
     Teacher Dashboard
   </div>
-  <div class="p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Teacher widgets here -->
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">Attendance</h3>
-        <p>Mark attendance for your classes.</p>
+
+  <!-- Welcome Message -->
+  <h1 class="text-3xl font-bold text-green-600 p-3">Welcome, {{ teacherName }}</h1>
+
+  <!-- Courses List -->
+  <div class="space-y-4 p-4">
+    @for (course of myCourses; track course) {
+      <div
+        class="bg-white rounded-2xl shadow p-4 transition-all duration-300"
+        [class.pb-6]="selectedAttendanceCourse === course.name || selectedGradesCourse === course.name"
+      >
+        <!-- Course Header -->
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-lg font-semibold">{{ course.name }}</p>
+            <p class="text-sm text-gray-500">{{ course.enrolled }} students</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-lg transition"
+              (click)="toggleAttendance(course.name)"
+            >
+              {{ selectedAttendanceCourse === course.name ? 'Close Attendance' : 'Attendance' }}
+            </button>
+
+            <button
+              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-lg transition"
+              (click)="toggleGrades(course.name)"
+            >
+              {{ selectedGradesCourse === course.name ? 'Close Grades' : 'Grades' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Expanded Attendance Section -->
+        @if (selectedAttendanceCourse === course.name) {
+          <div class="mt-4 border-t pt-4 text-gray-600 text-sm transition-opacity duration-300">
+            <p class="font-medium">Mark Attendance:</p>
+            <ul class="space-y-2 mt-2">
+              @for (student of course.students; track student) {
+                <li class="flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                  <span>{{ student.name }}</span>
+                  <button
+                    class="px-3 py-1 rounded-lg text-sm font-medium transition"
+                    [class.bg-green-500]="student.status === 'Present'"
+                    [class.bg-red-500]="student.status === 'Absent'"
+                    [class.text-white]="true"
+                    (click)="markAttendance(course, student)"
+                  >
+                    {{ student.status }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Expanded Grades Section -->
+        @if (selectedGradesCourse === course.name) {
+          <div class="mt-4 border-t pt-4 text-gray-600 text-sm transition-opacity duration-300">
+            <p class="font-medium">Assign Grades:</p>
+            <ul class="space-y-2 mt-2">
+              @for (student of course.students; track student) {
+                <li class="flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                  <span>{{ student.name }}</span>
+                  <input
+                    type="text"
+                    class="w-12 text-center border rounded-lg p-1"
+                    [value]="student.grade"
+                    (input)="updateGrade(course, student, $event)"
+                  />
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </div>
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">Grades</h3>
-        <p>Assign grades to students.</p>
-      </div>
-    </div>
+    }
   </div>
 </div>

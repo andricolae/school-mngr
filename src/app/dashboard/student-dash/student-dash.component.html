@@ -1,18 +1,41 @@
 <div class="min-h-screen bg-gray-100">
-  <div class="p-6 bg-yellow-500 text-white font-semibold text-xl">
+  <!-- Header -->
+  <div class="p-3 bg-yellow-500 text-white font-semibold text-lg md:text-center">
     Student Dashboard
   </div>
-  <div class="p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Student widgets here -->
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">My Courses</h3>
-        <p>View and manage your courses.</p>
+
+  <!-- Welcome Message -->
+  <h1 class="text-3xl font-bold text-yellow-600 p-3">Hello, {{ studentName }}</h1>
+
+  <!-- Courses List -->
+  <div class="space-y-4 p-4">
+    @for (course of enrolledCourses; track course) {
+      <div
+        class="bg-white rounded-2xl shadow p-4 transition-all duration-300"
+        [class.pb-6]="selectedCourse === course.name"
+      >
+        <!-- Course Header -->
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-lg font-semibold">{{ course.name }}</p>
+            <p class="text-sm text-gray-500">Grade: {{ course.grade }}</p>
+          </div>
+          <button
+            class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-lg transition"
+            (click)="toggleView(course.name)"
+          >
+            {{ selectedCourse === course.name ? 'Close' : 'View' }}
+          </button>
+        </div>
+
+        <!-- Expanded Course Info -->
+        @if (selectedCourse === course.name) {
+          <div class="mt-4 border-t pt-4 text-gray-600 text-sm transition-opacity duration-300">
+            <p><span class="font-medium">Teacher:</span> {{ course.teacher }}</p>
+            <p><span class="font-medium">Schedule:</span> {{ course.schedule }}</p>
+          </div>
+        }
       </div>
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">Grades</h3>
-        <p>View your grades.</p>
-      </div>
-    </div>
+    }
   </div>
 </div>

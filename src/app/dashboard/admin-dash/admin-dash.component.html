@@ -1,18 +1,125 @@
 <div class="min-h-screen bg-gray-100">
-  <div class="p-3 bg-blue-500 text-white font-semibold text-lg md:text-center">
+  <!-- Header -->
+  <div class="bg-blue-600 text-white p-4 text-lg font-semibold text-center">
     Admin Dashboard
   </div>
-  <div class="p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Admin widgets here -->
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">Courses</h3>
-        <p>Manage and assign courses.</p>
-      </div>
-      <div class="bg-white shadow-lg p-4 rounded-lg">
-        <h3 class="text-lg font-medium">Users</h3>
-        <p>View and manage users.</p>
-      </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
+    <div class="bg-white rounded-2xl shadow p-4 text-center">
+      <p class="text-gray-500">Teachers</p>
+      <p class="text-2xl font-bold">{{ teachers.length }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-4 text-center">
+      <p class="text-gray-500">Students</p>
+      <p class="text-2xl font-bold">{{ students.length }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-4 text-center">
+      <p class="text-gray-500">Courses</p>
+      <p class="text-2xl font-bold">{{ courses.length }}</p>
+    </div>
+  </div>
+
+  <!-- User Management Panel -->
+  <div class="p-4 space-y-4">
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4 text-blue-600">User Management</h2>
+
+      <!-- Form -->
+      <form (ngSubmit)="addUser()" class="grid gap-4 sm:grid-cols-2 mb-4">
+        <input
+          [(ngModel)]="newUser.name"
+          name="userName"
+          placeholder="Full Name"
+          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          required
+        />
+        <select
+          [(ngModel)]="newUser.role"
+          name="userRole"
+          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          required
+        >
+          <option value="" disabled selected>Select Role</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Student">Student</option>
+        </select>
+        <button
+          type="submit"
+          class="sm:col-span-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
+        >
+          Add User
+        </button>
+      </form>
+
+      <!-- List -->
+      <ul class="space-y-2">
+        @for (user of users; track user) {
+          <li class="bg-gray-50 rounded-lg p-3 flex justify-between items-center shadow">
+            <span>
+              <strong>{{ user.name }}</strong>
+              <span class="text-sm text-gray-500"> — {{ user.role }}</span>
+            </span>
+            <button
+              (click)="deleteUser(user.id)"
+              class="text-red-500 hover:text-red-600 text-lg"
+              title="Delete user"
+            >
+              ✖
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <!-- Course Management Panel -->
+  <div class="p-4 space-y-4">
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4 text-blue-600">Course Management</h2>
+
+      <!-- Form -->
+      <form (ngSubmit)="addCourse()" class="grid gap-4 sm:grid-cols-2 mb-4">
+        <input
+          [(ngModel)]="newCourse.name"
+          name="courseName"
+          placeholder="Course Name"
+          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          required
+        />
+        <input
+          [(ngModel)]="newCourse.teacher"
+          name="courseTeacher"
+          placeholder="Teacher Name"
+          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          required
+        />
+        <button
+          type="submit"
+          class="sm:col-span-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
+        >
+          Add Course
+        </button>
+      </form>
+
+      <!-- List -->
+      <ul class="space-y-2">
+        @for (course of courses; track course) {
+          <li class="bg-gray-50 rounded-lg p-3 flex justify-between items-center shadow">
+            <span>
+              <strong>{{ course.name }}</strong>
+              <span class="text-sm text-gray-500"> — {{ course.teacher }}</span>
+            </span>
+            <button
+              (click)="deleteCourse(course.id)"
+              class="text-red-500 hover:text-red-600 text-lg"
+              title="Delete course"
+            >
+              ✖
+            </button>
+          </li>
+        }
+      </ul>
     </div>
   </div>
 </div>
