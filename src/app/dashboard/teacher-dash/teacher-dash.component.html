@@ -40,7 +40,7 @@
         <!-- Expanded Attendance Section -->
         @if (selectedAttendanceCourse === course.name) {
           <div class="mt-4 border-t pt-4 text-gray-600 text-sm">
-            <p class="font-medium mb-4">Attendance — 15 Sessions</p>
+            <p class="font-medium mb-4">Attendance — 15 Courses over the Semester</p>
 
             <div class="overflow-x-auto">
               <table class="min-w-full border text-center text-sm">
@@ -48,7 +48,7 @@
                   <tr>
                     <th class="px-3 py-2 text-left">Student</th>
                     @for (i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track i) {
-                      <th class="px-2 py-2">S{{ i + 1 }}</th>
+                      <th class="px-2 py-2">C {{ i + 1 }}</th>
                     }
                   </tr>
                 </thead>

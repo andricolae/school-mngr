@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -8,19 +9,23 @@ import { Router } from '@angular/router';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
-  isAuthenticated = false;
-  isAdmin = false;
-  isTeacher = false;
-  isStudent = false;
+  constructor(private router: Router) { }
 
-  constructor(private router: Router) {
-    this.isTeacher = true;
-  }
+  private auth = inject(AuthService);
+
+  user = this.auth.user;
+
+  isAuthenticated = computed(() => !!this.user());
+  isAdmin = computed(() => this.user()?.role === 'Admin');
+  isTeacher = computed(() => this.user()?.role === 'Teacher');
+  isStudent = computed(() => this.user()?.role === 'Student');
 
   navigateTo(route: string) {
     this.router.navigate([route]);
   }
 
   logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }
