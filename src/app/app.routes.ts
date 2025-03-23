@@ -4,12 +4,18 @@ import { RegisterComponent } from './auth/register/register.component';
 import { AdminDashComponent } from './dashboard/admin-dash/admin-dash.component';
 import { TeacherDashComponent } from './dashboard/teacher-dash/teacher-dash.component';
 import { StudentDashComponent } from './dashboard/student-dash/student-dash.component';
+import { UnauthorizedComponent } from './core/unauthorized.component';
+import { HomeComponent } from './core/home.component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guards';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'admin/dashboard', component: AdminDashComponent },
-  { path: 'teacher/dashboard', component: TeacherDashComponent },
-  { path: 'student/dashboard', component: StudentDashComponent },
-  { path: '**', redirectTo: '/login' }
+  { path: 'admin/dashboard', component: AdminDashComponent, canActivate: [roleGuard(['Admin'])] },
+  { path: 'teacher/dashboard', component: TeacherDashComponent, canActivate: [roleGuard(['Teacher'])] },
+  { path: 'student/dashboard', component: StudentDashComponent, canActivate: [roleGuard(['Student'])] },
+  { path: 'unauthorized', component: UnauthorizedComponent },
+  { path: 'home', component: HomeComponent },
+  { path: '**', redirectTo: '/home' }
 ];

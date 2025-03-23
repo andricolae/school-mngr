@@ -9,7 +9,7 @@
     </div>
 
     <div class="flex space-x-2">
-      @if (isAdmin) {
+      <!-- @if (isAdmin) {
         <button
           (click)="navigateTo('/admin/dashboard')"
           class="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300">
@@ -29,7 +29,13 @@
           class="px-4 py-2 bg-yellow-500 hover:bg-yellow-700 text-white font-medium rounded-lg transition duration-300">
           Student
         </button>
-      }
+      } -->
+
+      <button (click)="navigateToDashboard()"
+              class="px-4 py-2 bg-blue-900 hover:bg-blue-300 text-white font-medium rounded-lg transition duration-300">
+          Dashboard
+      </button>
+
       @if (!isAuthenticated) {
         <button
           (click)="navigateTo('/login')"
