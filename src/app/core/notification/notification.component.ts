@@ -20,7 +20,7 @@ export class NotificationComponent {
     NotificationComponent.instance = this;
   }
 
-  static show(type: MessageType, message: string, durationMs: number = 5000) {
+  static show(type: MessageType, message: string, durationMs: number = 4000) {
     if (NotificationComponent.instance) {
       NotificationComponent.instance.message.set(message);
       NotificationComponent.instance.type.set(type);

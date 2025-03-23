@@ -3,10 +3,12 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationComponent } from '../../core/notification/notification.component';
+import { SpinnerComponent } from "../../core/spinner/spinner.component";
+import { SpinnerService } from '../../core/services/spinner.service';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -18,7 +20,8 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private authService: AuthService) {}
+    private authService: AuthService,
+    private spinner: SpinnerService) {}
 
   ngOnInit() {
     this.authService.user.subscribe(user => {
@@ -26,7 +29,13 @@ export class LoginComponent {
     })
   }
 
+  testSpinner() {
+    this.spinner.show()
+  }
+
   onSubmit(form: NgForm) {
+    this.spinner.show()
+
     if (!form.valid) {
       NotificationComponent.show('alert', 'Email and Password must be valid!');
       return;
@@ -34,6 +43,7 @@ export class LoginComponent {
 
     this.authService.login(this.email, this.password).pipe().subscribe({
       next: response => {
+        this.spinner.hide()
         console.log('User logged in!', response);
         this.router.navigate(['/home']);
       }
