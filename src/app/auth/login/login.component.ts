@@ -13,6 +13,7 @@ export class LoginComponent {
   email = '';
   password = '';
   isAuthenticated = false;
+  isFormValid = false;
 
   constructor(
     private router: Router,
@@ -26,6 +27,7 @@ export class LoginComponent {
 
   onSubmit(form: NgForm) {
     if (!form.valid) {
+      alert("Email and Password must be valid!");
       return;
     }
 
@@ -35,6 +37,16 @@ export class LoginComponent {
         this.router.navigate(['/home']);
       }
     });
+  }
+
+  validateForm() {
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
+    const passwordValid = this.password.length >= 6;
+
+    this.isFormValid = emailValid && passwordValid;
+
+    if (!emailValid) alert('Email must be valid');
+    if (!passwordValid) alert('Password must be at least 6 characters');
   }
 
   navigateTo(route: string) {

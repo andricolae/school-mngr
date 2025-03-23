@@ -16,7 +16,8 @@ export class RegisterComponent {
   name = '';
   role = '';
   isAuthenticated = false;
-  isResetting = false;
+  isFormValid = false;
+
 
   constructor(
     private router: Router,
@@ -30,6 +31,7 @@ export class RegisterComponent {
 
   onSubmit(form: NgForm) {
     if (!form.valid) {
+      alert("Fields must be valid before submitting!");
       return;
     } else if (this.password !== this.confirmPassword) {
         alert("Passwords do not match!");
@@ -50,6 +52,22 @@ export class RegisterComponent {
         alert('Failed to register: ' + err.message);
       }
     });
+  }
+
+  validateForm() {
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
+    const passwordValid = this.password.length >= 6;
+    const nameValid = /^[A-Za-z\s]+$/.test(this.name);
+    const roleValid = this.role !== '';
+    const confirmMatch = this.password === this.confirmPassword;
+
+    this.isFormValid = emailValid && passwordValid && nameValid && roleValid && confirmMatch;
+
+    if (!emailValid) alert('Email must be valid');
+    if (!passwordValid) alert('Password must be at least 6 characters');
+    if (!nameValid) alert('Name must only contain letters and spaces!');
+    if (!roleValid) alert('Please select a role!');
+    if (!confirmMatch) alert('Passwords must match!');
   }
 
   navigateTo(route: string) {
