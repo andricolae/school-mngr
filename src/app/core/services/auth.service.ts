@@ -118,6 +118,7 @@ export class AuthService {
   logout() {
     this.user.next(null);
     console.log('User logged out!');
+    localStorage.removeItem('userData');
     this.router.navigate(['/login']);
   }
 

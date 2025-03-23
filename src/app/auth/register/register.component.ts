@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationComponent } from '../../core/notification/notification.component';
 
 @Component({
   selector: 'app-register',
@@ -18,7 +19,6 @@ export class RegisterComponent {
   isAuthenticated = false;
   isFormValid = false;
 
-
   constructor(
     private router: Router,
     private authService: AuthService) {}
@@ -30,17 +30,18 @@ export class RegisterComponent {
   }
 
   onSubmit(form: NgForm) {
-    if (!form.valid) {
-      alert("Fields must be valid before submitting!");
+    console.log(this.isFormValid);
+    if (!this.isFormValid) {
+      NotificationComponent.show('alert', 'Fields must be valid before submitting!');
       return;
     } else if (this.password !== this.confirmPassword) {
-        alert("Passwords do not match!");
+        NotificationComponent.show('alert', 'Passwords do not match!');
         return;
     }
 
     this.authService.signup(this.email, this.password, this.name, this.role).subscribe({
       next: () => {
-        alert('Account created! Please log in.');
+        NotificationComponent.show('success', 'Account created! Please log in.');
         form.reset();
         this.email = '';
         this.password = '';
@@ -49,7 +50,7 @@ export class RegisterComponent {
         this.role = '';
       },
       error: (err) => {
-        alert('Failed to register: ' + err.message);
+        NotificationComponent.show('alert', 'Failed to register: + ${err.message}');
       }
     });
   }
@@ -63,11 +64,16 @@ export class RegisterComponent {
 
     this.isFormValid = emailValid && passwordValid && nameValid && roleValid && confirmMatch;
 
-    if (!emailValid) alert('Email must be valid');
-    if (!passwordValid) alert('Password must be at least 6 characters');
-    if (!nameValid) alert('Name must only contain letters and spaces!');
-    if (!roleValid) alert('Please select a role!');
-    if (!confirmMatch) alert('Passwords must match!');
+    if (!emailValid)
+      NotificationComponent.show('alert', 'Email must be valid');
+    if (!passwordValid)
+      NotificationComponent.show('alert', 'Password must be at least 6 characters');
+    if (!nameValid)
+      NotificationComponent.show('alert', 'Name must only contain letters and spaces!');
+    if (!roleValid)
+      NotificationComponent.show('alert', 'Please select a role!');
+    if (!confirmMatch)
+      NotificationComponent.show('alert', 'Passwords must match!');
   }
 
   navigateTo(route: string) {
