@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationComponent } from '../../core/notification/notification.component';
+import { SpinnerService } from '../../core/services/spinner.service';
 
 @Component({
   selector: 'app-register',
@@ -21,7 +22,8 @@ export class RegisterComponent {
 
   constructor(
     private router: Router,
-    private authService: AuthService) {}
+    private authService: AuthService,
+    private spinner: SpinnerService) {}
 
   ngOnInit() {
     this.authService.user.subscribe(user => {
@@ -30,6 +32,8 @@ export class RegisterComponent {
   }
 
   onSubmit(form: NgForm) {
+    this.spinner.show();
+
     console.log(this.isFormValid);
     if (!this.isFormValid) {
       NotificationComponent.show('alert', 'Fields must be valid before submitting!');
@@ -41,6 +45,7 @@ export class RegisterComponent {
 
     this.authService.signup(this.email, this.password, this.name, this.role).subscribe({
       next: () => {
+        this.spinner.hide();
         NotificationComponent.show('success', 'Account created! Please log in.');
         form.reset();
         this.email = '';

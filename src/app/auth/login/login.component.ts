@@ -29,10 +29,6 @@ export class LoginComponent {
     })
   }
 
-  testSpinner() {
-    this.spinner.show()
-  }
-
   onSubmit(form: NgForm) {
     this.spinner.show()
 
@@ -67,6 +63,8 @@ export class LoginComponent {
   }
 
   resetPassword() {
+    this.spinner.show()
+
     if (!this.email) {
       NotificationComponent.show('alert', 'Please enter your email before resetting the password to your account!');
       return;
@@ -74,9 +72,11 @@ export class LoginComponent {
 
     this.authService.resetPassword(this.email).pipe().subscribe(
       () => {
+        this.spinner.hide()
         NotificationComponent.show('success', 'If your email has been registered, a password reset link has been sent to you!');
       },
       (error) => {
+        this.spinner.hide()
         console.error(error);
         NotificationComponent.show('success', 'Unable to send reset email');
       }
