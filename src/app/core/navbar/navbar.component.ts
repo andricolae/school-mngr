@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -12,9 +14,36 @@ export class NavbarComponent {
   isAdmin = false;
   isTeacher = false;
   isStudent = false;
+  userRole: string | null = null;
+  private userSub!: Subscription;
 
-  constructor(private router: Router) {
-    this.isTeacher = true;
+  constructor(private router: Router, private authService: AuthService) {}
+
+  ngOnInit() {
+    this.userSub = this.authService.user.subscribe(user => {
+      this.isAuthenticated = !!user;
+      this.userRole = user?.role ?? null;
+    });
+  }
+
+  ngOnDestroy() {
+    this.userSub.unsubscribe();
+  }
+
+  navigateToDashboard() {
+    switch (this.userRole) {
+      case 'Admin':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'Teacher':
+        this.router.navigate(['/teacher/dashboard']);
+        break;
+      case 'Student':
+        this.router.navigate(['/student/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/unauthorized']);
+    }
   }
 
   navigateTo(route: string) {
@@ -22,5 +51,7 @@ export class NavbarComponent {
   }
 
   logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }
