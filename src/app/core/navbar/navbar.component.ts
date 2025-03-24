@@ -17,9 +17,7 @@ export class NavbarComponent {
   userRole: string | null = null;
   private userSub!: Subscription;
 
-  constructor(private router: Router, private authService: AuthService) {
-    this.isAdmin = true;
-  }
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
     this.userSub = this.authService.user.subscribe(user => {
