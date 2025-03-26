@@ -1,10 +1,8 @@
 <div class="min-h-screen bg-gray-100">
-  <!-- Header -->
   <div class="bg-blue-600 text-white p-4 text-lg font-semibold text-center">
     Admin Dashboard
   </div>
 
-  <!-- Stats -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Teachers</p>
@@ -16,16 +14,14 @@
     </div>
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Courses</p>
-      <p class="text-2xl font-bold">{{ courses.length }}</p>
+      <!-- <p class="text-2xl font-bold">{{ courses.length }}</p> -->
     </div>
   </div>
 
-  <!-- User Management Panel -->
   <div class="p-4 space-y-4">
     <div class="bg-white rounded-2xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-blue-600">User Management</h2>
 
-      <!-- Form -->
       <form (ngSubmit)="addUser()" class="grid gap-4 sm:grid-cols-2 mb-4">
         <input
           [(ngModel)]="newUser.name"
@@ -52,7 +48,6 @@
         </button>
       </form>
 
-      <!-- List -->
       <ul class="space-y-2">
         @for (user of users; track user) {
           <li class="bg-gray-50 rounded-lg p-3 flex justify-between items-center shadow">
@@ -73,13 +68,11 @@
     </div>
   </div>
 
-  <!-- Course Management Panel -->
   <div class="p-4 space-y-4">
     <div class="bg-white rounded-2xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-blue-600">Course Management</h2>
 
-      <!-- Form -->
-      <form (ngSubmit)="addCourse()" class="grid gap-4 sm:grid-cols-2 mb-4">
+      <form (ngSubmit)="addCourse()" class="grid gap-4 sm:grid-cols-3 mb-4">
         <input
           [(ngModel)]="newCourse.name"
           name="courseName"
@@ -94,30 +87,47 @@
           class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
           required
         />
+        <input
+          [(ngModel)]="newCourse.schedule"
+          name="courseSchedule"
+          placeholder="Day_1 - Hours; Day_2 - Hours; ..."
+          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          required
+        />
         <button
           type="submit"
-          class="sm:col-span-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
+          class="sm:col-span-3 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
         >
-          Add Course
+          {{ editingCourseId ? 'Save Course' : 'Add Course' }}
         </button>
       </form>
 
-      <!-- List -->
       <ul class="space-y-2">
-        @for (course of courses; track course) {
-          <li class="bg-gray-50 rounded-lg p-3 flex justify-between items-center shadow">
-            <span>
-              <strong>{{ course.name }}</strong>
-              <span class="text-sm text-gray-500"> — {{ course.teacher }}</span>
-            </span>
-            <button
-              (click)="deleteCourse(course.id)"
-              class="text-red-500 hover:text-red-600 text-lg"
-              title="Delete course"
-            >
-              ✖
-            </button>
+        @for (course of courses$ | async; track course.id) {
+          <li class="bg-gray-50 rounded-lg px-4 py-3 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex flex-col text-left">
+              <span class="font-semibold text-gray-800">{{ course.name }}</span>
+              <span class="text-sm text-gray-500">{{ course.teacher }}</span>
+            </div>
+            <div class="flex gap-2 items-center">
+              <button
+              (click)="editCourse(course)"
+                class="text-blue-600 hover:text-blue-800 transition"
+                title="Update course"
+              >
+                ✏️
+              </button>
+              <button
+                (click)="deleteCourse(course.id!)"
+                class="text-red-500 hover:text-red-700 transition"
+                title="Delete course"
+              >
+                ✖
+              </button>
+            </div>
           </li>
+
+
         }
       </ul>
     </div>

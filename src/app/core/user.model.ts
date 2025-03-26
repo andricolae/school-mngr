@@ -16,8 +16,8 @@ export class User {
 }
 
 export interface Course {
-  id: string;
+  id?: string;
   name: string;
   teacher: string;
-  schedule?: {days: string[], hours: string[]};
+  schedule?: string;
 }

@@ -9,8 +9,8 @@ import { firebaseConfig } from '../environment';
 import { provideZoneChangeDetection } from '@angular/core';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
-// import { CoursesEffects } from './app/state/courses/courses.effects';
-// import { coursesReducer } from './app/state/courses/courses.reducer';
+import { CoursesEffects } from './app/state/courses/course.effects';
+import { coursesReducer } from './app/state/courses/course.reducer';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -20,9 +20,9 @@ bootstrapApplication(AppComponent, {
     provideFirestore(() => getFirestore()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideClientHydration(withEventReplay()),
-    // provideStore({ courses: coursesReducer }),
-    // provideEffects([
-    //   CoursesEffects,
-    // ])
+    provideStore({ courses: coursesReducer }),
+    provideEffects([
+      CoursesEffects,
+    ])
   ],
 });
