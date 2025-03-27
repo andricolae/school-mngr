@@ -1,5 +1,7 @@
-import { Course } from './../../core/user.model';
+import { loadUsers } from './../../state/users/user.actions';
+import { Course, User } from './../../core/user.model';
 import * as CourseActions from '../../state/courses/course.actions';
+import * as UserActions from '../../state/users/user.actions';
 import { Store } from '@ngrx/store';
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +11,8 @@ import { AsyncPipe } from '@angular/common';
 import { SpinnerComponent } from '../../core/spinner/spinner.component';
 import { SpinnerService } from '../../core/services/spinner.service';
 import { ConfirmationDialogComponent } from "../../core/confirmation-dialog/confirmation-dialog.component";
+import { selectAllUsers } from '../../state/users/user.selector';
+import { combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-admin-dash',
@@ -17,22 +21,17 @@ import { ConfirmationDialogComponent } from "../../core/confirmation-dialog/conf
   templateUrl: './admin-dash.component.html',
 })
 export class AdminDashComponent {
-  users = [
-    { id: 1, name: 'Alice Johnson', role: 'Teacher' },
-    { id: 2, name: 'Brian Smith', role: 'Student' },
-    { id: 3, name: 'Carlos Rivera', role: 'Student' },
-    { id: 4, name: 'Diana Lee', role: 'Teacher' },
-    { id: 5, name: 'Emily Wang', role: 'Student' },
-  ];
-
-  @ViewChild('dialog') dialog!: ConfirmationDialogComponent;
+    @ViewChild('dialog') dialog!: ConfirmationDialogComponent;
 
   courseCount = 0;
+  studentCount = 0;
+  teacherCount = 0;
 
   newUser = { name: '', role: '' };
 
   newCourse: Course = {name: '', teacher: '', schedule: ''};
 
+  users$ = this.store.select(selectAllUsers);
   courses$ = this.store.select(selectAllCourses);
 
   editingCourseId: string | null = null;
@@ -42,25 +41,20 @@ export class AdminDashComponent {
   ngOnInit(): void {
     this.spinner.show();
     this.store.dispatch(CourseActions.loadCourses());
+    this.store.dispatch(UserActions.loadUsers());
     this.courses$.subscribe(courses => {
       this.courseCount = courses.length;
-      setTimeout(() => {
-        this.spinner.hide();
-      }, 200);
     });
-
+    this.users$.subscribe(users => {
+      this.teacherCount = users.filter(user => user.role === 'Teacher').length;
+      this.studentCount = users.filter(user => user.role === 'Student').length;
+    });
+    setTimeout(() => {
+      this.spinner.hide();
+    }, 300);
   }
 
-  get teachers() {
-    return this.users.filter((u) => u.role === 'Teacher');
-  }
-
-  get students() {
-    return this.users.filter((u) => u.role === 'Student');
-  }
-
-  deleteUser(id: number) {
-    this.users = this.users.filter((u) => u.id !== id);
+  deleteUser(id: string) {
   }
 
   addCourse() {

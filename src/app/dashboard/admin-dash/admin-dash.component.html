@@ -2,17 +2,17 @@
   <app-spinner />
   <app-confirmation-dialog #dialog />
 
-  <div class="bg-blue-600 text-white p-4 text-lg font-semibold text-center">
+  <div class="bg-blue-400 text-white p-4 text-lg font-semibold text-center">
     Admin Dashboard
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Teachers</p>
-      <p class="text-2xl font-bold">{{ teachers.length }}</p>
+      <p class="text-2xl font-bold">{{ teacherCount }}</p>
     </div>
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Students</p>
-      <p class="text-2xl font-bold">{{ students.length }}</p>
+      <p class="text-2xl font-bold">{{ studentCount }}</p>
     </div>
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Courses</p>
@@ -24,7 +24,7 @@
     <div class="bg-white rounded-2xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-blue-600">User Management</h2>
 
-      <form class="grid gap-4 sm:grid-cols-2 mb-4">
+      <!-- <form class="grid gap-4 sm:grid-cols-2 mb-4">
         <input
           [(ngModel)]="newUser.name"
           name="userName"
@@ -48,17 +48,16 @@
         >
           Add User
         </button>
-      </form>
+      </form> -->
 
       <ul class="space-y-2">
-        @for (user of users; track user) {
+        @for (user of users$ | async; track user.id) {
           <li class="bg-gray-50 rounded-lg p-3 flex justify-between items-center shadow">
             <span>
-              <strong>{{ user.name }}</strong>
+              <strong>{{ user.fullName }}</strong>
               <span class="text-sm text-gray-500"> — {{ user.role }}</span>
             </span>
             <button
-              (click)="deleteUser(user.id)"
               class="text-red-500 hover:text-red-600 text-lg"
               title="Delete user"
             >

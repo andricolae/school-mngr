@@ -1,17 +1,17 @@
 import { createReducer, on } from '@ngrx/store';
 import * as UserActions from './user.actions';
-import { User } from '../../core/user.model';
+import { UserModel } from '../../core/user.model';
 
 export interface UsersState {
-    users: User[];
-    loading: boolean;
-    error: string | null;
+  users: UserModel[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: UsersState = {
-    users: [],
-    loading: false,
-    error: null
+  users: [],
+  loading: false,
+  error: null
 };
 
 export const usersReducer = createReducer(
@@ -32,11 +32,11 @@ export const usersReducer = createReducer(
 
     on(UserActions.deleteUserSuccess, (state, { userId }) => ({
         ...state,
-        users: state.users.filter(c => c.id !== userId)
+        users: state.users.filter(u => u.id !== userId)
     })),
 
     on(UserActions.updateUserSuccess, (state, { user }) => ({
         ...state,
-        users: state.users.map(c => c.id === user.id ? user : c)
+        users: state.users.map(u => u.id === user.id ? user : u)
       })),
 );

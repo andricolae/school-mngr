@@ -11,6 +11,8 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { CoursesEffects } from './app/state/courses/course.effects';
 import { coursesReducer } from './app/state/courses/course.reducer';
+import { UsersEffects } from './app/state/users/user.effects';
+import { usersReducer } from './app/state/users/user.reducer';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -20,9 +22,10 @@ bootstrapApplication(AppComponent, {
     provideFirestore(() => getFirestore()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideClientHydration(withEventReplay()),
-    provideStore({ courses: coursesReducer }),
+    provideStore({ courses: coursesReducer, users: usersReducer}),
     provideEffects([
       CoursesEffects,
+      UsersEffects
     ])
   ],
 });
