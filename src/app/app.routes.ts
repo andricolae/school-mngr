@@ -17,5 +17,5 @@ export const routes: Routes = [
   { path: 'student/dashboard', component: StudentDashComponent, canActivate: [roleGuard(['Student'])] },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: 'home', component: HomeComponent },
-  { path: '*', redirectTo: '/home' }
+  { path: '**', redirectTo: '/home' }
 ];

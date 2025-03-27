@@ -1,8 +1,10 @@
 <div class="min-h-screen bg-gray-100">
+  <app-spinner />
+  <app-confirmation-dialog #dialog />
+
   <div class="bg-blue-600 text-white p-4 text-lg font-semibold text-center">
     Admin Dashboard
   </div>
-
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4">
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Teachers</p>
@@ -14,7 +16,7 @@
     </div>
     <div class="bg-white rounded-2xl shadow p-4 text-center">
       <p class="text-gray-500">Courses</p>
-      <!-- <p class="text-2xl font-bold">{{ courses.length }}</p> -->
+      <p class="text-2xl font-bold">{{ courseCount }}</p>
     </div>
   </div>
 
@@ -22,7 +24,7 @@
     <div class="bg-white rounded-2xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-blue-600">User Management</h2>
 
-      <form (ngSubmit)="addUser()" class="grid gap-4 sm:grid-cols-2 mb-4">
+      <form class="grid gap-4 sm:grid-cols-2 mb-4">
         <input
           [(ngModel)]="newUser.name"
           name="userName"
@@ -126,8 +128,6 @@
               </button>
             </div>
           </li>
-
-
         }
       </ul>
     </div>
