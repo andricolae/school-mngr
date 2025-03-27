@@ -1,11 +1,11 @@
 import { createAction, props } from '@ngrx/store';
-import { User } from '../../core/user.model';
+import { UserModel } from '../../core/user.model';
 
 export const loadUsers = createAction('[Users] Load Users');
 
 export const loadUsersSuccess = createAction(
     '[Users] Load Users Success',
-    props<{ users: User[] }>()
+    props<{ users: UserModel[] }>()
 );
 
 export const loadUsersFail = createAction(
@@ -30,12 +30,12 @@ export const deleteUserFail = createAction(
 
 export const updateUser = createAction(
   '[Users] Update User',
-  props<{ user: User }>()
+  props<{ user: UserModel }>()
 );
 
 export const updateUserSuccess = createAction(
   '[Users] Update User Success',
-  props<{ user: User }>()
+  props<{ user: UserModel }>()
 );
 
 export const updateUserFail = createAction(

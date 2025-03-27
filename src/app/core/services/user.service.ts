@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, deleteDoc, doc, updateDoc } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
-import { User } from '../user.model';
+import { UserModel } from '../user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +13,8 @@ export class UserService {
     this.usersCollection = collection(this.firestore, 'users');
   }
 
-  getusers(): Observable<User[]> {
-    return collectionData(this.usersCollection, { idField: 'id' }) as Observable<User[]>;
+  getUsers(): Observable<UserModel[]> {
+    return collectionData(this.usersCollection, { idField: 'id' }) as Observable<UserModel[]>;
   }
 
   deleteUser(userId: string): Observable<void> {
@@ -22,7 +22,7 @@ export class UserService {
     return from(deleteDoc(userDoc));
   }
 
-  updateUser(user: User): Observable<void> {
+  updateUser(user: UserModel): Observable<void> {
     const userDoc = doc(this.firestore, `users/${user.id}`);
     const { id, ...userWithoutId } = user;
     return from(updateDoc(userDoc, userWithoutId));

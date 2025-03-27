@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as UserActions from './user.actions';
 import { catchError, from, map, mergeMap, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { User } from '../../core/user.model';
+import { UserModel } from '../../core/user.model';
 import { UserService } from '../../core/services/user.service';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class UsersEffects {
     this.actions$.pipe(
       ofType(UserActions.loadUsers),
       mergeMap(() =>
-        this.dbService.getusers().pipe(
+        this.dbService.getUsers().pipe(
           map((users) => UserActions.loadUsersSuccess({ users })),
           catchError((err) =>
             of(UserActions.loadUsersFail({ error: err.message }))
