@@ -88,12 +88,9 @@ export class AdminDashComponent {
   }
 
   async deleteCourse(courseId: string) {
-    console.log("delete clicked");
     const confirmed = await this.dialog.open('Do you really want to delete this course?');
-    console.log("confirmed checked");
     if (confirmed) {
       this.store.dispatch(CourseActions.deleteCourse({ courseId }))
     }
-    console.log("delete finished");
   }
 }
