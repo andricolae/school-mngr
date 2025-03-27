@@ -26,6 +26,7 @@ export class NavbarComponent {
       this.isAuthenticated = !!user;
       this.userRole = user?.role ?? null;
     });
+    console.log(this.isAuthenticated);
   }
 
   ngOnDestroy() {
