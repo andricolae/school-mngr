@@ -14,3 +14,10 @@ export class User {
     return this._token;
   }
 }
+
+export interface Course {
+  id?: string;
+  name: string;
+  teacher: string;
+  schedule?: string;
+}

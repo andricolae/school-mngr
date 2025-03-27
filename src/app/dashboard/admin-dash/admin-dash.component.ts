@@ -1,10 +1,17 @@
+import { Course } from './../../core/user.model';
+import * as CourseActions from '../../state/courses/course.actions';
+import { Store } from '@ngrx/store';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { selectAllCourses } from '../../state/courses/course.selector';
+import { CourseService } from '../../core/services/course.service';
+import { Router } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin-dash',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, AsyncPipe],
   templateUrl: './admin-dash.component.html',
 })
 export class AdminDashComponent {
@@ -21,19 +28,19 @@ export class AdminDashComponent {
     { id: 10, name: 'Jack Nguyen', role: 'Student' },
   ];
 
-  courses = [
-    { id: 1, name: 'Mathematics 101', teacher: 'Alice Johnson' },
-    { id: 2, name: 'English Literature', teacher: 'Diana Lee' },
-    { id: 3, name: 'Biology Basics', teacher: 'Frank Thompson' },
-    { id: 4, name: 'World History', teacher: 'Isla Moore' },
-    { id: 5, name: 'Physics for Beginners', teacher: 'Alice Johnson' },
-    { id: 6, name: 'Art & Design', teacher: 'Diana Lee' },
-    { id: 7, name: 'Chemistry Lab', teacher: 'Frank Thompson' },
-    { id: 8, name: 'Computer Science 1', teacher: 'Isla Moore' },
-  ];
-
   newUser = { name: '', role: '' };
-  newCourse = { name: '', teacher: '' };
+
+  newCourse: Course = {name: '', teacher: '', schedule: ''};
+
+  courses$ = this.store.select(selectAllCourses);
+
+  editingCourseId: string | null = null;
+
+  constructor(private store: Store, private router: Router){}
+
+  ngOnInit(): void {
+    this.store.dispatch(CourseActions.loadCourses());
+  }
 
   get teachers() {
     return this.users.filter((u) => u.role === 'Teacher');
@@ -58,18 +65,42 @@ export class AdminDashComponent {
     this.users = this.users.filter((u) => u.id !== id);
   }
 
+  // addCourse() {
+  //   this.store.dispatch(CourseActions.addCourse({
+  //     course: this.newCourse
+  //   }));
+  //   this.newCourse = {
+  //     name: '',
+  //     teacher: '',
+  //     schedule: ''
+  //   };
+  // }
+
   addCourse() {
-    if (this.newCourse.name && this.newCourse.teacher) {
-      this.courses.push({
-        id: this.courses.length + 1,
-        name: this.newCourse.name,
-        teacher: this.newCourse.teacher,
-      });
-      this.newCourse = { name: '', teacher: '' };
+    if (this.editingCourseId) {
+      this.store.dispatch(CourseActions.updateCourse({
+        course: { ...this.newCourse, id: this.editingCourseId }
+      }));
+    } else {
+      this.store.dispatch(CourseActions.addCourse({
+        course: this.newCourse
+      }));
     }
+
+    this.newCourse = { name: '', teacher: '', schedule: '' };
+    this.editingCourseId = null;
   }
 
-  deleteCourse(id: number) {
-    this.courses = this.courses.filter((c) => c.id !== id);
+  editCourse(course: Course) {
+    this.newCourse = {
+      name: course.name,
+      teacher: course.teacher,
+      schedule: course.schedule
+    };
+    this.editingCourseId = course.id!;
+  }
+
+  deleteCourse(courseId: string) {
+    this.store.dispatch(CourseActions.deleteCourse({ courseId }))
   }
 }
