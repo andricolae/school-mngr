@@ -22,3 +22,8 @@ export const selectIsLoading = createSelector(
   selectUsersState,
   (state) => state.loading
 );
+
+export const selectUser = createSelector(
+  selectUsersState,
+  (state) => state.users
+);

@@ -43,7 +43,7 @@ export class UsersEffects {
     )
   );
 
-  updateCourse$ = createEffect(() =>
+  updateUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.updateUser),
       mergeMap(({ user }) =>
@@ -57,4 +57,17 @@ export class UsersEffects {
     )
   );
 
+  // getUser$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(UserActions.getUser),
+  //     mergeMap((user) =>
+  //       this.dbService.getUser(user).pipe(
+  //         map((user) => UserActions.getUserSuccess({ user })),
+  //         catchError((err) =>
+  //           of(UserActions.getUserFail({ error: err.message }))
+  //         )
+  //       )
+  //     )
+  //   )
+  // );
 }

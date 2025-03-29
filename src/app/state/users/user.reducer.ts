@@ -38,5 +38,22 @@ export const usersReducer = createReducer(
     on(UserActions.updateUserSuccess, (state, { user }) => ({
         ...state,
         users: state.users.map(u => u.id === user.id ? user : u)
-      })),
+    })),
+
+    on(UserActions.getUser, (state, { user }) => ({
+      ...state,
+      user: state.users.map(u => u.email === user.email ? user.email : u)
+    })),
+
+    on(UserActions.getUserSuccess, (state, { user }) => ({
+      ...state,
+      user,
+      loading: false
+    })),
+
+    on(UserActions.getUserFail, (state, { error }) => ({
+        ...state,
+        error,
+        loading: false
+    })),
 );

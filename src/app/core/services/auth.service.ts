@@ -64,7 +64,6 @@ export class AuthService {
       )
       .pipe(
         switchMap((response) => {
-          // ✅ Step 1: check if email is verified
           return this.http
             .post<any>(
               `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${this.apiKey}`,
@@ -94,6 +93,7 @@ export class AuthService {
         tap(({ response, role }) => {
           this.handleAuthentication(
             response.email,
+
             response.localId,
             response.idToken,
             +response.expiresIn,
