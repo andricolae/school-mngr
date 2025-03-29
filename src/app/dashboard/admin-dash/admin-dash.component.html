@@ -24,31 +24,33 @@
     <div class="bg-white rounded-2xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-blue-600">User Management</h2>
 
-      <!-- <form class="grid gap-4 sm:grid-cols-2 mb-4">
-        <input
-          [(ngModel)]="newUser.name"
-          name="userName"
-          placeholder="Full Name"
-          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-          required
-        />
-        <select
-          [(ngModel)]="newUser.role"
-          name="userRole"
-          class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-          required
-        >
-          <option value="" disabled selected>Select Role</option>
-          <option value="Teacher">Teacher</option>
-          <option value="Student">Student</option>
-        </select>
-        <button
-          type="submit"
-          class="sm:col-span-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
-        >
-          Add User
-        </button>
-      </form> -->
+      @if (editingUserId !== null) {
+        <form (ngSubmit)="updateUser()" class="grid gap-4 sm:grid-cols-2 mb-4">
+          <input
+            [(ngModel)]="newUser.fullName"
+            name="userName"
+            placeholder="Full Name"
+            class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+            required
+          />
+          <select
+            [(ngModel)]="newUser.role"
+            name="userRole"
+            class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+            required
+          >
+            <option value="" disabled selected>Select Role</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Student">Student</option>
+          </select>
+          <button
+            type="submit"
+            class="sm:col-span-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
+          >
+            Update User
+          </button>
+        </form>
+      }
 
       <ul class="space-y-2">
         @for (user of users$ | async; track user.id) {
@@ -57,12 +59,22 @@
               <strong>{{ user.fullName }}</strong>
               <span class="text-sm text-gray-500"> — {{ user.role }}</span>
             </span>
-            <button
-              class="text-red-500 hover:text-red-600 text-lg"
-              title="Delete user"
-            >
-              ✖
-            </button>
+            <div class="flex gap-2 items-center">
+              <button
+              (click)="editUser(user)"
+                class="text-blue-600 hover:text-blue-800 transition"
+                title="Update course"
+              >
+                ✏️
+              </button>
+              <button
+              (click)="deleteUser(user.id!)"
+                class="text-red-500 hover:text-red-600 text-lg"
+                title="Delete user"
+              >
+                ✖
+              </button>
+            </div>
           </li>
         }
       </ul>

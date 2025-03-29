@@ -46,13 +46,14 @@ export class RegisterComponent {
     this.authService.signup(this.email, this.password, this.name, this.role).subscribe({
       next: () => {
         this.spinner.hide();
-        NotificationComponent.show('success', 'Account created! Please log in.');
         form.reset();
         this.email = '';
         this.password = '';
         this.confirmPassword = '';
         this.name = '';
         this.role = '';
+        this.navigateTo("/login");
+        NotificationComponent.show('success', 'Account created! Please log in.');
       },
       error: (err) => {
         NotificationComponent.show('alert', 'Failed to register: + ${err.message}');

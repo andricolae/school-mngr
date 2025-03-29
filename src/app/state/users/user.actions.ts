@@ -43,3 +43,17 @@ export const updateUserFail = createAction(
   props<{ error: string }>()
 );
 
+export const getUser = createAction(
+  '[User] Load User',
+  props<{ user: UserModel }>()
+)
+
+export const getUserSuccess = createAction(
+  '[Users] Load User Success',
+  props<{ user: UserModel }>()
+);
+
+export const getUserFail = createAction(
+  '[Users] Load Users Fail',
+  props<{ error: string }>()
+);
