@@ -50,9 +50,9 @@
 </div>
 
 @if (isEnrollmentModalOpen) {
-  <!-- <app-course-enrollment
+  <app-course-enrollment
     [enrolledCourseIds]="enrolledCourseIds"
     (closeModal)="closeEnrollmentModal()"
-    (enrollmentChanged)="onEnrollmentChanged()">
-  </app-course-enrollment> -->
+    (enrollmentChanged)="onEnrollmentChanged($event)">
+  </app-course-enrollment>
 }
