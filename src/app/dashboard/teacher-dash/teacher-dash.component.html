@@ -1,20 +1,17 @@
 <div class="min-h-screen bg-gray-100">
-  <!-- Header -->
+  <app-spinner />
   <div class="p-3 bg-green-500 text-white font-semibold text-lg md:text-center">
     Teacher Dashboard
   </div>
 
-  <!-- Welcome Message -->
-  <h1 class="text-3xl font-bold text-green-600 p-3">Welcome, {{ teacherName }}</h1>
+  <h1 class="text-3xl font-bold text-green-600 p-3">Welcome, {{ loggedUser.fullName }}</h1>
 
-  <!-- Courses List -->
   <div class="space-y-4 p-4">
     @for (course of myCourses; track course) {
       <div
         class="bg-white rounded-2xl shadow p-4 transition-all duration-300"
         [class.pb-6]="selectedAttendanceCourse === course.name || selectedGradesCourse === course.name"
       >
-        <!-- Course Header -->
         <div class="flex justify-between items-center">
           <div>
             <p class="text-lg font-semibold">{{ course.name }}</p>
@@ -37,7 +34,6 @@
           </div>
         </div>
 
-        <!-- Expanded Attendance Section -->
         @if (selectedAttendanceCourse === course.name) {
           <div class="mt-4 border-t pt-4 text-gray-600 text-sm transition-opacity duration-300">
             <p class="font-medium">Mark Attendance:</p>
@@ -60,7 +56,6 @@
           </div>
         }
 
-        <!-- Expanded Grades Section -->
         @if (selectedGradesCourse === course.name) {
           <div class="mt-4 border-t pt-4 text-gray-600 text-sm transition-opacity duration-300">
             <p class="font-medium">Assign Grades:</p>

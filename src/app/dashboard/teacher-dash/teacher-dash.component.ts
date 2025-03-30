@@ -1,10 +1,18 @@
 import { Component } from '@angular/core';
+import { UserModel } from '../../core/user.model';
+import * as UserActions from '../../state/users/user.actions';
+import * as CourseActions from '../../state/courses/course.actions'
+import { Store } from '@ngrx/store';
+import { selectAllUsers } from '../../state/users/user.selector';
+import { SpinnerService } from '../../core/services/spinner.service';
+import { SpinnerComponent } from "../../core/spinner/spinner.component";
 
 @Component({
   selector: 'app-teacher-dash',
   standalone: true,
   templateUrl: './teacher-dash.component.html',
   styleUrl: './teacher-dash.component.css',
+  imports: [SpinnerComponent],
 })
 export class TeacherDashComponent {
   teacherName = 'Diana Lee';
@@ -32,18 +40,32 @@ export class TeacherDashComponent {
   myCourses: any[] = [];
   selectedAttendanceCourse: string | null = null;
   selectedGradesCourse: string | null = null;
+  users$ = this.store.select(selectAllUsers);
+  loggedUser: UserModel = { fullName: 'loading', role: 'loading', email: 'loading' };
 
+  constructor(private store: Store, private spinner: SpinnerService) {}
   ngOnInit() {
     setTimeout(() => {
       this.myCourses = this.allCourses
         .filter(course => course.teacher === this.teacherName)
         .map(course => ({
           ...course,
-          enrolled: this.students.length, // Fake enrollments
+          enrolled: this.students.length,
           students: this.students.map(student => ({ ...student }))
         }));
     });
-  }
+
+    this.spinner.show();
+      this.store.dispatch(CourseActions.loadCourses());
+      this.store.dispatch(UserActions.loadUsers());
+
+      this.users$.subscribe(users => {
+        this.loggedUser = users.find(user => user.email === JSON.parse(localStorage.getItem('userData')!).email)!;
+      });
+      setTimeout(() => {
+        this.spinner.hide();
+      }, 1000);
+    }
 
   toggleAttendance(courseName: string) {
     this.selectedAttendanceCourse = this.selectedAttendanceCourse === courseName ? null : courseName;
