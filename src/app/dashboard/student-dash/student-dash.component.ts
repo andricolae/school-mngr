@@ -43,7 +43,9 @@ export class StudentDashComponent {
 
   users$ = this.store.select(selectAllUsers);
   loggedUser: UserModel = { fullName: 'loading', role: 'loading', email: 'loading' };
-  currentDate = new Date(2025, 2, 30);
+
+  currentDate = new Date();
+  private sessionCheckInterval: any;
 
   isEnrollmentModalOpen = false;
   enrolledCourseIds = ['course1', 'course3', 'course5'];
@@ -56,7 +58,7 @@ export class StudentDashComponent {
     { id: 'session3', date: new Date(2025, 2, 15), startTime: '13:00', endTime: '15:00', attended: true },
     { id: 'session4', date: new Date(2025, 2, 20), startTime: '13:00', endTime: '15:00', attended: true },
     { id: 'session5', date: new Date(2025, 2, 25), startTime: '13:00', endTime: '15:00', attended: false },
-    { id: 'session6', date: new Date(2025, 2, 30), startTime: '13:00', endTime: '15:00', attended: false },
+    { id: 'session6', date: new Date(2025, 2, 30), startTime: '16:00', endTime: '17:00', attended: false },
     { id: 'session7', date: new Date(2025, 2, 31), startTime: '13:00', endTime: '15:00', attended: false }
   ];
 
@@ -69,7 +71,7 @@ export class StudentDashComponent {
       grades: [
         { title: 'Midterm Exam', value: 9.5, date: '2025-02-15' },
         { title: 'Lab Report 1', value: 10, date: '2025-01-25' },
-        { title: 'Lab Report 2', value: 10.5, date: '2025-03-10' }
+        { title: 'Lab Report 2', value: 10, date: '2025-03-10' }
       ],
       sessions: [...this.commonSessions]
     },
@@ -91,8 +93,8 @@ export class StudentDashComponent {
       schedule: 'Fri 15:00',
       grades: [
         { title: 'Portfolio Review', value: 9.5, date: '2025-02-20' },
-        { title: 'Design Theory Test', value: 9.0, date: '2025-01-30' },
-        { title: 'Final Project', value: 10.0, date: '2025-03-15' }
+        { title: 'Design Theory Test', value: 7.0, date: '2025-01-30' },
+        { title: 'Final Project', value: 8.5, date: '2025-03-15' }
       ],
       sessions: [...this.commonSessions]
     }
@@ -104,12 +106,34 @@ export class StudentDashComponent {
     this.spinner.show();
     this.store.dispatch(CourseActions.loadCourses());
     this.store.dispatch(UserActions.loadUsers());
+
     this.users$.subscribe(users => {
       this.loggedUser = users.find(user => user.email === JSON.parse(localStorage.getItem('userData')!).email)!;
     });
+    this.currentDate = new Date();
     setTimeout(() => {
       this.spinner.hide();
     }, 1000);
+    this.sessionCheckInterval = setInterval(() => {
+      this.checkSessionStatuses();
+    }, 60000);
+  }
+
+  ngOnDestroy() {
+    if (this.sessionCheckInterval) {
+      clearInterval(this.sessionCheckInterval);
+    }
+  }
+
+  checkSessionStatuses(): void {
+    this.currentDate = new Date();
+    this.enrolledCourses.forEach(course => {
+      course.sessions.forEach(session => {
+        if (!session.attended && this.hasSessionEnded(session)) {
+          console.log(`Marked absent for ${course.name}, session: ${session.id}`);
+        }
+      });
+    });
   }
 
   calculateMeanGrade(grades: CourseGrade[]): number {
@@ -181,13 +205,18 @@ export class StudentDashComponent {
 
   getSessionStatus(session: ClassSession): string {
     const sessionDate = new Date(session.date);
-    const today = this.currentDate;
+    const todayMidnight = new Date(this.currentDate);
+    todayMidnight.setHours(0, 0, 0, 0);
 
     if (session.attended) {
       return 'Present';
     }
 
-    if (sessionDate.getTime() < today.setHours(0, 0, 0, 0)) {
+    if (this.hasSessionEnded(session)) {
+      return 'Absent';
+    }
+
+    if (sessionDate.getTime() < todayMidnight.getTime()) {
       return 'Absent';
     }
 
@@ -198,15 +227,36 @@ export class StudentDashComponent {
     return 'Upcoming';
   }
 
-  getAttendanceCount(course: EnrolledCourse): number {
+  hasSessionEnded(session: ClassSession): boolean {
+    const sessionDate = new Date(session.date);
+    const currentDate = this.currentDate;
+
+    if (sessionDate.getDate() !== currentDate.getDate() ||
+        sessionDate.getMonth() !== currentDate.getMonth() ||
+        sessionDate.getFullYear() !== currentDate.getFullYear()) {
+      return false;
+    }
+
+    const now = this.currentDate;
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTimeMinutes = hours * 60 + minutes;
+
+    const [endHours, endMinutes] = session.endTime.split(':').map(Number);
+    const endTimeMinutes = endHours * 60 + endMinutes;
+
+    return currentTimeMinutes > endTimeMinutes;
+  }
+
+  getAttendanceCount(course: EnrolledCourse) {
     return course.sessions.filter(s => s.attended).length;
   }
-  getAbsenceCount(course: EnrolledCourse): number {
+  getAbsenceCount(course: EnrolledCourse) {
     return course.sessions.filter(s => !s.attended && new Date(s.date) < this.currentDate && this.getSessionStatus(s) === 'Absent').length;
   }
 
-  getAttendanceRate(course: EnrolledCourse): number {
-    return (this.getAttendanceCount(course) / (this.getAttendanceCount(course) + this.getAbsenceCount(course)) * 100);
+  getAttendanceRate(course: EnrolledCourse) {
+    return (this.getAttendanceCount(course) / (this.getAttendanceCount(course) + this.getAbsenceCount(course)) * 100).toFixed(0);
   }
   getSessionStatusClass(session: ClassSession): string {
     const status = this.getSessionStatus(session);
