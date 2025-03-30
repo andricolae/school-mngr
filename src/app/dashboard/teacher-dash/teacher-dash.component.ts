@@ -97,13 +97,13 @@ export class TeacherDashComponent {
     { name: 'Computer Science 1', teacher: 'Isla Moore' }
   ];
 
-  students = [
-    { name: 'Brian Smith', status: 'Present', grade: '10' },
-    { name: 'Carlos Rivera', status: 'Absent', grade: '8' },
-    { name: 'Emily Wang', status: 'Present', grade: '9' },
-    { name: 'Grace Kim', status: 'Present', grade: '9.5' },
-    { name: 'Henry Patel', status: 'Absent', grade: '8.5' },
-    { name: 'Jack Nguyen', status: 'Present', grade: '7' }
+  baseStudents = [
+    { name: 'Brian Smith', grade: '10' },
+    { name: 'Carlos Rivera', grade: '8' },
+    { name: 'Emily Wang', grade: '9' },
+    { name: 'Grace Kim', grade: '9.5' },
+    { name: 'Henry Patel', grade: '8.5' },
+    { name: 'Jack Nguyen', grade: '7' }
   ];
 
   selectedAttendanceCourse: string | null = null;
