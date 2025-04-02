@@ -20,6 +20,15 @@ export interface Course {
   name: string;
   teacher: string;
   schedule?: string;
+  sessions?: CourseSession[];
+  enrolledStudents?: string[];
+}
+
+export interface CourseSession {
+  id: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
 }
 
 export interface UserModel {

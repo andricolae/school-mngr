@@ -22,3 +22,20 @@ export const selectIsLoading = createSelector(
     selectCoursesState,
   (state) => state.loading
 );
+
+export const selectCourseById = (courseId: string) => createSelector(
+  selectAllCourses,
+  (courses) => courses.find(course => course.id === courseId)
+);
+
+export const selectEnrolledCourses = (studentId: string) => createSelector(
+  selectAllCourses,
+  (courses) => courses.filter(course =>
+    course.enrolledStudents && course.enrolledStudents.includes(studentId)
+  )
+);
+
+export const selectAvailableCourses = createSelector(
+  selectAllCourses,
+  (courses) => courses
+);

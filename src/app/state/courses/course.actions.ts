@@ -58,3 +58,32 @@ export const updateCourseFail = createAction(
   props<{ error: string }>()
 );
 
+export const enrollStudent = createAction(
+  '[Courses] Enroll Student',
+  props<{ courseId: string, studentId: string }>()
+);
+
+export const enrollStudentSuccess = createAction(
+  '[Courses] Enroll Student Success',
+  props<{ courseId: string, studentId: string }>()
+);
+
+export const enrollStudentFail = createAction(
+  '[Courses] Enroll Student Fail',
+  props<{ error: string }>()
+);
+
+export const unenrollStudent = createAction(
+  '[Courses] Unenroll Student',
+  props<{ courseId: string, studentId: string }>()
+);
+
+export const unenrollStudentSuccess = createAction(
+  '[Courses] Unenroll Student Success',
+  props<{ courseId: string, studentId: string }>()
+);
+
+export const unenrollStudentFail = createAction(
+  '[Courses] Unenroll Student Fail',
+  props<{ error: string }>()
+);

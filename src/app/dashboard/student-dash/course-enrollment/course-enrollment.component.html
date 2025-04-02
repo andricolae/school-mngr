@@ -1,4 +1,4 @@
-<!-- src/app/dashboard/student-dash/course-enrollment/course-enrollment.component.html -->
+<!-- src/app/dashboard/student-dash/course-enrollment/course-enrollment.component.html
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-lg w-full max-w-2xl">
     <div class="bg-yellow-500 text-white p-3 rounded-t-lg flex justify-between items-center">
@@ -35,6 +35,99 @@
                   : 'bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition'">
                 {{ isEnrolled(course.id) ? 'Unenroll' : 'Enroll' }}
               </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="border-t p-3 flex justify-end">
+      <button
+        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition"
+        (click)="close()">
+        Close
+      </button>
+    </div>
+  </div>
+</div> -->
+
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg w-full max-w-2xl">
+    <div class="bg-yellow-500 text-white p-3 rounded-t-lg flex justify-between items-center">
+      <h2 class="text-xl font-semibold">Course Enrollment</h2>
+      <button
+        class="text-white hover:bg-yellow-600 p-1 rounded-full"
+        (click)="close()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-4 max-h-[70vh] overflow-y-auto">
+      <p class="text-gray-600 mb-4">Select courses to enroll or unenroll</p>
+
+      <!-- Loading Spinner -->
+      <app-spinner />
+
+      @if (isLoading) {
+        <div class="flex justify-center items-center h-40">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+        </div>
+      } @else if (error$ | async) {
+        <div class="p-4 bg-red-100 text-red-700 rounded-lg">
+          <p>Error loading courses. Please try again later.</p>
+        </div>
+      } @else {
+        <div class="space-y-3">
+          @for (course of availableCourses$ | async; track course.id) {
+            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-medium text-lg">{{ course.name }}</h3>
+                  <p class="text-sm text-gray-600">Instructor: {{ course.teacher }}</p>
+
+                  @if (course.schedule) {
+                    <p class="text-sm text-gray-600">Schedule: {{ course.schedule }}</p>
+                  }
+
+                  @if (course.sessions && course.sessions.length > 0) {
+                    <p class="text-sm text-gray-600 mt-1">
+                      <span class="font-medium">Sessions:</span> {{ formatSessionDates(course) }}
+                    </p>
+                  }
+
+                  <!-- @if (course.capacity) {
+                    <p class="text-sm mt-1">
+                      <span class="font-medium">Enrollment:</span>
+                      {{ course.enrolledStudents?.length || 0 }}/{{ course.capacity }}
+                      <span
+                        [ngClass]="{
+                          'text-green-600': getEnrollmentStatus(course).color === 'green',
+                          'text-yellow-600': getEnrollmentStatus(course).color === 'orange',
+                          'text-red-600': getEnrollmentStatus(course).color === 'red'
+                        }"
+                        class="text-xs font-medium ml-1 px-2 py-0.5 rounded-full"
+                        [ngClass]="{
+                          'bg-green-100': getEnrollmentStatus(course).color === 'green',
+                          'bg-yellow-100': getEnrollmentStatus(course).color === 'orange',
+                          'bg-red-100': getEnrollmentStatus(course).color === 'red'
+                        }"
+                      >
+                        {{ getEnrollmentStatus(course).text }}
+                      </span>
+                    </p>
+                  } -->
+                </div>
+
+                <button
+                  (click)="toggleEnrollment(course)"
+                  [class]="isEnrolled(course.id!)
+                    ? 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition'
+                    : 'bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition'">
+                  {{ isEnrolled(course.id!) ? 'Unenroll' : 'Enroll' }}
+                </button>
+              </div>
             </div>
           }
         </div>
