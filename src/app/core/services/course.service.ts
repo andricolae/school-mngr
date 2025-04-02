@@ -65,7 +65,8 @@ export class CourseService {
     // return from(addDoc(this.coursesCollection, course).then(ref => ref.id));
     const courseToAdd = {
       ...course,
-      sessions: course.sessions || []
+      sessions: course.sessions || [],
+      enrolledStudents: course.enrolledStudents || []
     };
     return from(addDoc(this.coursesCollection, courseToAdd).then(ref => ref.id));
   }

@@ -19,6 +19,7 @@ export interface Course {
   id?: string;
   name: string;
   teacher: string;
+  teacherId?: string;
   schedule?: string;
   sessions?: CourseSession[];
   enrolledStudents?: string[];

@@ -69,6 +69,8 @@ export class AdminDashComponent {
   editingUserId: string | null = null;
   users$ = this.store.select(selectAllUsers);
 
+  teachers: UserModel[] = [];
+
   newCourse: Course = {name: '', teacher: '', schedule: '', sessions: [], enrolledStudents: []};
   courses$ = this.store.select(selectAllCourses);
   editingCourseId: string | null = null;
@@ -247,7 +249,8 @@ export class AdminDashComponent {
       this.courseCount = courses.length;
     });
     this.users$.subscribe(users => {
-      this.teacherCount = users.filter(user => user.role === 'Teacher').length;
+      this.teachers = users.filter(user => user.role === 'Teacher');
+      this.teacherCount = this.teachers.length;
       this.studentCount = users.filter(user => user.role === 'Student').length;
     });
     setTimeout(() => {
@@ -257,10 +260,24 @@ export class AdminDashComponent {
 
   addCourse() {
     if (this.editingCourseId) {
+      if (this.newCourse.teacherId) {
+        const selectedTeacher = this.teachers.find(t => t.id === this.newCourse.teacherId);
+        if (selectedTeacher) {
+          this.newCourse.teacher = selectedTeacher.fullName;
+        }
+      }
+
       this.store.dispatch(CourseActions.updateCourse({
         course: { ...this.newCourse, id: this.editingCourseId }
       }));
     } else {
+      if (this.newCourse.teacherId) {
+        const selectedTeacher = this.teachers.find(t => t.id === this.newCourse.teacherId);
+        if (selectedTeacher) {
+          this.newCourse.teacher = selectedTeacher.fullName;
+        }
+      }
+
       const courseToAdd: Course = {
         ...this.newCourse,
         sessions: this.newCourse.sessions || [],
@@ -278,6 +295,13 @@ export class AdminDashComponent {
   editCourse(course: Course) {
     this.newCourse = { ...course };
     this.editingCourseId = course.id!;
+
+    if (!this.newCourse.teacherId && this.newCourse.teacher) {
+      const foundTeacher = this.teachers.find(t => t.fullName === this.newCourse.teacher);
+      if (foundTeacher) {
+        this.newCourse.teacherId = foundTeacher.id;
+      }
+    }
   }
 
   async deleteCourse(courseId: string): Promise<void> {
@@ -477,6 +501,7 @@ export class AdminDashComponent {
       name: '',
       teacher: '',
       schedule: '',
+      teacherId: '',
       sessions: [],
       enrolledStudents: []
     };
