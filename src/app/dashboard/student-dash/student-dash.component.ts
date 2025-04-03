@@ -12,6 +12,7 @@ import * as CourseSelectors from '../../state/courses/course.selector';
 import * as UserSelectors from '../../state/users/user.selector';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { NotificationComponent } from '../../core/notification/notification.component';
+import { WeeklyScheduleComponent } from './weekly-schedule/weekly-schedule.component';
 interface CourseGrade {
   title: string;
   value: number;
@@ -43,7 +44,7 @@ interface EnrolledCourse {
 
 @Component({
   selector: 'app-student-dash',
-  imports: [SpinnerComponent, CourseEnrollmentComponent, DatePipe, NgClass, CommonModule],
+  imports: [SpinnerComponent, CourseEnrollmentComponent, DatePipe, NgClass, WeeklyScheduleComponent, CommonModule],
   templateUrl: './student-dash.component.html',
   styleUrl: './student-dash.component.css'
 })

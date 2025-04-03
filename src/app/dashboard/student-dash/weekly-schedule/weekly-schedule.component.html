@@ -1,0 +1,32 @@
+<div class="bg-white rounded-2xl shadow-md p-4 mb-6">
+  <h2 class="text-lg font-semibold text-yellow-600 mb-3">Weekly Schedule</h2>
+
+  <div class="grid grid-cols-7 gap-2">
+    @for (day of weekDays; track day.date) {
+      <div class="text-center" [class.bg-yellow-50]="day.isToday" [class.rounded-lg]="day.isToday">
+        <div class="mb-1">
+          <div class="font-medium text-gray-700">{{ day.dayName }}</div>
+          <div class="inline-block rounded-full w-7 h-7 flex items-center justify-center"
+              [class.bg-yellow-500]="day.isToday"
+              [class.text-white]="day.isToday">
+            {{ day.dayNumber }}
+          </div>
+        </div>
+
+        @if (day.sessions.length === 0) {
+          <div class="text-gray-400 text-xs py-2">No Classes</div>
+        } @else {
+          <div class="space-y-2 mt-2">
+            @for (session of day.sessions; track session.id) {
+              <div class="bg-yellow-100 rounded-lg p-2 text-left text-xs shadow-sm">
+                <div class="font-medium text-yellow-800">{{ session.courseName }}</div>
+                <div class="text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</div>
+                <div class="text-gray-600 truncate">{{ session.teacherName }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
