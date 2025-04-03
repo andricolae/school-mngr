@@ -10,7 +10,7 @@ import { CourseEnrollmentComponent } from "./course-enrollment/course-enrollment
 import { CommonModule, DatePipe, NgClass } from '@angular/common';
 import * as CourseSelectors from '../../state/courses/course.selector';
 import * as UserSelectors from '../../state/users/user.selector';
-import { Observable, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { NotificationComponent } from '../../core/notification/notification.component';
 interface CourseGrade {
   title: string;
@@ -32,7 +32,13 @@ interface EnrolledCourse {
   teacher: string;
   schedule: string;
   grades: CourseGrade[];
-  sessions: ClassSession[];
+  sessions: {
+    id: string;
+    date: Date;
+    startTime: string;
+    endTime: string;
+    attended: boolean;
+  }[];
 }
 
 @Component({
@@ -135,16 +141,56 @@ export class StudentDashComponent {
       }
     });
 
-    this.courseSubscription = this.availableCourses$.subscribe(courses => {
-      if (courses.length > 0) {
+    // this.courseSubscription = this.availableCourses$.subscribe(courses => {
+    //   if (courses.length > 0) {
+    //     this.enrolledCourseIds = courses
+    //       .filter(course =>
+    //         course.enrolledStudents?.includes(this.loggedUser.id!)
+    //       )
+    //       .map(course => course.id!)
+    //       .filter(id => id);
+
+    //     this.updateEnrolledCourses(courses);
+    //   }
+    // });
+
+    this.courseSubscription = combineLatest([this.availableCourses$, this.currentUser$]).subscribe(([courses, users]) => {
+      if (courses.length > 0 && this.loggedUser && this.loggedUser.id) {
         this.enrolledCourseIds = courses
-          .filter(course =>
-            course.enrolledStudents?.includes(this.loggedUser.id!)
-          )
+          .filter(course => course.enrolledStudents?.includes(this.loggedUser.id!))
           .map(course => course.id!)
           .filter(id => id);
 
-        this.updateEnrolledCourses(courses);
+        this.enrolledCourses = courses
+          .filter(course => course.enrolledStudents?.includes(this.loggedUser.id!))
+          .map(course => {
+            const sessions = (course.sessions || []).map(session => {
+              const isAttended = !!(course.studentAttendance &&
+                              course.studentAttendance[this.loggedUser.id!] &&
+                              course.studentAttendance[this.loggedUser.id!][session.id] === true);
+
+              return {
+                id: session.id,
+                date: new Date(session.date),
+                startTime: session.startTime,
+                endTime: session.endTime,
+                attended: isAttended
+              };
+            });
+
+            const grades = course.studentGrades && course.studentGrades[this.loggedUser.id!]
+              ? [...course.studentGrades[this.loggedUser.id!]]
+              : [];
+
+            return {
+              id: course.id!,
+              name: course.name,
+              teacher: course.teacher,
+              schedule: course.schedule || '',
+              grades: grades,
+              sessions: sessions
+            };
+          });
       }
     });
 
@@ -292,21 +338,28 @@ export class StudentDashComponent {
   markAttendance(courseId: string, sessionId: string): void {
     this.spinner.show();
 
-    setTimeout(() => {
-      const courseIndex = this.enrolledCourses.findIndex(course => course.id === courseId);
-      if (courseIndex !== -1) {
-        const sessionIndex = this.enrolledCourses[courseIndex].sessions.findIndex(
-          session => session.id === sessionId
-        );
+    // Dispatch action to update attendance in Firebase
+    this.store.dispatch(CourseActions.updateStudentAttendance({
+      courseId,
+      studentId: this.loggedUser.id!,
+      sessionId,
+      present: true
+    }));
 
-        if (sessionIndex !== -1) {
-          this.enrolledCourses[courseIndex].sessions[sessionIndex].attended = true;
-        }
+    // Update local state for immediate UI feedback
+    const courseIndex = this.enrolledCourses.findIndex(course => course.id === courseId);
+    if (courseIndex !== -1) {
+      const sessionIndex = this.enrolledCourses[courseIndex].sessions.findIndex(
+        session => session.id === sessionId
+      );
+
+      if (sessionIndex !== -1) {
+        this.enrolledCourses[courseIndex].sessions[sessionIndex].attended = true;
       }
+    }
 
-      this.spinner.hide();
-      NotificationComponent.show('success', 'Attendance marked successfully');
-    }, 800);
+    this.spinner.hide();
+    NotificationComponent.show('success', 'Attendance marked successfully');
   }
 
   getAttendanceCount(course: EnrolledCourse): number {

@@ -155,7 +155,9 @@ export const coursesReducer = createReducer(
           if (!updatedCourse.studentAttendance[studentId]) {
             updatedCourse.studentAttendance[studentId] = {};
           } else {
-            updatedCourse.studentAttendance[studentId] = { ...updatedCourse.studentAttendance[studentId] };
+            updatedCourse.studentAttendance[studentId] = {
+              ...updatedCourse.studentAttendance[studentId]
+            };
           }
 
           updatedCourse.studentAttendance[studentId][sessionId] = present;
