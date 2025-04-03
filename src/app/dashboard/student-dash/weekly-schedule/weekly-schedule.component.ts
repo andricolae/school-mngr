@@ -16,6 +16,7 @@ interface WeekSession {
   startTime: string;
   endTime: string;
   teacherName: string;
+  studentCount: number;
 }
 
 @Component({
@@ -25,7 +26,8 @@ interface WeekSession {
   styleUrl: './weekly-schedule.component.css'
 })
 export class WeeklyScheduleComponent {
-  @Input() enrolledCourses: any[] = [];
+  @Input() courses: any[] = [];
+  @Input() viewType: 'student' | 'teacher' = 'student';
 
   weekDays: WeekDay[] = [];
   today = new Date();
@@ -41,7 +43,7 @@ export class WeeklyScheduleComponent {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['enrolledCourses']) {
+    if (changes['courses'] || changes['viewType']) {
       this.generateWeekSchedule();
     }
   }
@@ -82,7 +84,7 @@ export class WeeklyScheduleComponent {
   generateWeekSchedule(): void {
     this.weekDays.forEach(day => day.sessions = []);
 
-    this.enrolledCourses.forEach(course => {
+    this.courses.forEach(course => {
       if (!course.sessions || !course.sessions.length) return;
 
       course.sessions.forEach((session: CourseSession) => {
@@ -92,14 +94,24 @@ export class WeeklyScheduleComponent {
           const dayIndex = this.getDayIndex(sessionDate);
 
           if (dayIndex >= 0 && dayIndex < 7) {
-            this.weekDays[dayIndex].sessions.push({
+            const sessionInfo: WeekSession = {
               id: session.id,
               courseId: course.id,
+              teacherName: course.teacher,
               courseName: course.name,
               startTime: session.startTime,
               endTime: session.endTime,
-              teacherName: course.teacher
-            });
+              studentCount: 0
+            };
+
+            if (this.viewType === 'student') {
+              sessionInfo.teacherName = course.teacher;
+            } else if (this.viewType === 'teacher') {
+              sessionInfo.studentCount = course.students?.length ||
+                                        course.enrolledStudents?.length || 0;
+            }
+
+            this.weekDays[dayIndex].sessions.push(sessionInfo);
 
             this.weekDays[dayIndex].sessions.sort((a, b) => {
               return this.convertTimeToMinutes(a.startTime) - this.convertTimeToMinutes(b.startTime);
@@ -140,5 +152,9 @@ export class WeeklyScheduleComponent {
     hours = hours ? hours : 12;
 
     return `${hours}:${minutes} ${ampm}`;
+  }
+
+  getThemeColor(): string {
+    return this.viewType === 'teacher' ? 'green' : 'yellow';
   }
 }
