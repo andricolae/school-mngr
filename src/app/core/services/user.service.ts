@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, deleteDoc, doc, updateDoc, query, getDocs, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, deleteDoc, doc, updateDoc, query, getDocs, where } from '@angular/fire/firestore';
 import { from, map, Observable } from 'rxjs';
 import { User, UserModel } from '../user.model';
 

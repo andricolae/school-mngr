@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as CourseActions from './course.actions';
-import { catchError, from, map, mergeMap, of, tap } from 'rxjs';
+import { catchError, map, mergeMap, of } from 'rxjs';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/user.model';
 import { NotificationComponent } from '../../core/notification/notification.component';
@@ -35,7 +35,6 @@ export class CoursesEffects {
           .addCourse({ ...course})
           .pipe(
             map((courseId) => {
-                // console.log("Firebase returned courseId:", courseId);
                 NotificationComponent.show('success', 'Course added successfully');
                 return CourseActions.addCourseSuccess({
                   course: {
@@ -118,6 +117,51 @@ export class CoursesEffects {
           catchError((error) => {
             NotificationComponent.show('alert', `Failed to unenroll from course: ${error.message}`);
             return of(CourseActions.unenrollStudentFail({ error: error.message }));
+          })
+        )
+      )
+    )
+  );
+
+  addStudentGrade$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CourseActions.addStudentGrade),
+      mergeMap(({ courseId, studentId, grade }) =>
+        this.courseService.addStudentGrade(courseId, studentId, grade).pipe(
+          map((gradeId) => {
+            NotificationComponent.show('success', 'Grade added successfully');
+            return CourseActions.addStudentGradeSuccess({
+              courseId,
+              studentId,
+              grade: { ...grade, id: gradeId }
+            });
+          }),
+          catchError((error) => {
+            NotificationComponent.show('alert', `Failed to add grade: ${error.message}`);
+            return of(CourseActions.addStudentGradeFail({ error: error.message }));
+          })
+        )
+      )
+    )
+  );
+
+  updateStudentAttendance$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CourseActions.updateStudentAttendance),
+      mergeMap(({ courseId, studentId, sessionId, present }) =>
+        this.courseService.updateStudentAttendance(courseId, studentId, sessionId, present).pipe(
+          map(() => {
+            NotificationComponent.show('success', 'Attendance updated successfully');
+            return CourseActions.updateStudentAttendanceSuccess({
+              courseId,
+              studentId,
+              sessionId,
+              present
+            });
+          }),
+          catchError((error) => {
+            NotificationComponent.show('alert', `Failed to update attendance: ${error.message}`);
+            return of(CourseActions.updateStudentAttendanceFail({ error: error.message }));
           })
         )
       )

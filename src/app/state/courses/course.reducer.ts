@@ -108,14 +108,66 @@ export const coursesReducer = createReducer(
           }
           return course;
       })
-  }))
+  })),
 
-    // on(
-    //     CourseActions.addCourseSuccess,
-    //     CourseActions.addCourseFail,
-    //     (state) => ({
-    //         ...state,
-    //         loading: false
-    //     })
-    // ),
+  on(CourseActions.addStudentGradeSuccess, (state, { courseId, studentId, grade }) => {
+    return {
+      ...state,
+      courses: state.courses.map(course => {
+        if (course.id === courseId) {
+          const updatedCourse = { ...course };
+
+          if (!updatedCourse.studentGrades) {
+            updatedCourse.studentGrades = {};
+          }
+
+          updatedCourse.studentGrades = { ...updatedCourse.studentGrades };
+
+          if (!updatedCourse.studentGrades[studentId]) {
+            updatedCourse.studentGrades[studentId] = [];
+          } else {
+            updatedCourse.studentGrades[studentId] = [...updatedCourse.studentGrades[studentId]];
+          }
+
+          updatedCourse.studentGrades[studentId].push(grade);
+
+          return updatedCourse;
+        }
+        return course;
+      }),
+      loading: false
+    };
+  }),
+
+  on(CourseActions.updateStudentAttendanceSuccess, (state, { courseId, studentId, sessionId, present }) => {
+    return {
+      ...state,
+      courses: state.courses.map(course => {
+        if (course.id === courseId) {
+          const updatedCourse = { ...course };
+
+          if (!updatedCourse.studentAttendance) {
+            updatedCourse.studentAttendance = {};
+          }
+
+          updatedCourse.studentAttendance = { ...updatedCourse.studentAttendance };
+
+          if (!updatedCourse.studentAttendance[studentId]) {
+            updatedCourse.studentAttendance[studentId] = {};
+          } else {
+            updatedCourse.studentAttendance[studentId] = {
+              ...updatedCourse.studentAttendance[studentId]
+            };
+          }
+
+          updatedCourse.studentAttendance[studentId][sessionId] = present;
+
+          return updatedCourse;
+        }
+        return course;
+      }),
+      loading: false
+    };
+  })
+
 );
