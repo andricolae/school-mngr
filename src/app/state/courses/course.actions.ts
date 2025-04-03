@@ -87,3 +87,60 @@ export const unenrollStudentFail = createAction(
   '[Courses] Unenroll Student Fail',
   props<{ error: string }>()
 );
+
+export const addStudentGrade = createAction(
+  '[Courses] Add Student Grade',
+  props<{
+    courseId: string;
+    studentId: string;
+    grade: {
+      title: string;
+      value: number;
+      date: string;
+    }
+  }>()
+);
+
+export const addStudentGradeSuccess = createAction(
+  '[Courses] Add Student Grade Success',
+  props<{
+    courseId: string;
+    studentId: string;
+    grade: {
+      id: string;
+      title: string;
+      value: number;
+      date: string;
+    }
+  }>()
+);
+
+export const addStudentGradeFail = createAction(
+  '[Courses] Add Student Grade Fail',
+  props<{ error: string }>()
+);
+
+export const updateStudentAttendance = createAction(
+  '[Courses] Update Student Attendance',
+  props<{
+    courseId: string;
+    studentId: string;
+    sessionId: string;
+    present: boolean;
+  }>()
+);
+
+export const updateStudentAttendanceSuccess = createAction(
+  '[Courses] Update Student Attendance Success',
+  props<{
+    courseId: string;
+    studentId: string;
+    sessionId: string;
+    present: boolean;
+  }>()
+);
+
+export const updateStudentAttendanceFail = createAction(
+  '[Courses] Update Student Attendance Fail',
+  props<{ error: string }>()
+);

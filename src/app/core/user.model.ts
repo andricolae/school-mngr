@@ -23,6 +23,19 @@ export interface Course {
   schedule?: string;
   sessions?: CourseSession[];
   enrolledStudents?: string[];
+  studentGrades?: {
+    [studentId: string]: {
+      id: string;
+      title: string;
+      value: number;
+      date: string;
+    }[]
+  };
+  studentAttendance?: {
+    [studentId: string]: {
+      [sessionId: string]: boolean
+    }
+  };
 }
 
 export interface CourseSession {
