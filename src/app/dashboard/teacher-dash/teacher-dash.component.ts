@@ -11,13 +11,14 @@ import { DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { selectAllCourses } from '../../state/courses/course.selector';
 import { combineLatest, Subscription } from 'rxjs';
+import { WeeklyScheduleComponent } from '../student-dash/weekly-schedule/weekly-schedule.component';
 
 @Component({
   selector: 'app-teacher-dash',
   standalone: true,
   templateUrl: './teacher-dash.component.html',
   styleUrl: './teacher-dash.component.css',
-  imports: [SpinnerComponent, NgClass, DatePipe, FormsModule],
+  imports: [SpinnerComponent, NgClass, DatePipe, FormsModule, WeeklyScheduleComponent],
 })
 export class TeacherDashComponent {
   teacherName = '';
@@ -62,65 +63,65 @@ export class TeacherDashComponent {
     this.spinner.show();
 
     this.spinner.show();
-  this.store.dispatch(CourseActions.loadCourses());
-  this.store.dispatch(UserActions.loadUsers());
+    this.store.dispatch(CourseActions.loadCourses());
+    this.store.dispatch(UserActions.loadUsers());
 
-  this.userSubscription = this.users$.subscribe(users => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      this.currentUser = users.find(user => user.email === parsedUser.email) || null;
+    this.userSubscription = this.users$.subscribe(users => {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        this.currentUser = users.find(user => user.email === parsedUser.email) || null;
 
-      if (this.currentUser) {
-        this.teacherName = this.currentUser.fullName;
+        if (this.currentUser) {
+          this.teacherName = this.currentUser.fullName;
+        }
       }
-    }
-  });
+    });
 
-  this.coursesSubscription = combineLatest([this.courses$, this.users$]).subscribe(([courses, users]) => {
-    if (this.currentUser?.id) {
-      this.myCourses = courses
-        .filter(course => course.teacherId === this.currentUser?.id || course.teacher === this.currentUser?.fullName)
-        .map(course => {
-          const students = course.enrolledStudents?.map(studentId => {
-            const student = users.find(u => u.id === studentId);
+    this.coursesSubscription = combineLatest([this.courses$, this.users$]).subscribe(([courses, users]) => {
+      if (this.currentUser?.id) {
+        this.myCourses = courses
+          .filter(course => course.teacherId === this.currentUser?.id || course.teacher === this.currentUser?.fullName)
+          .map(course => {
+            const students = course.enrolledStudents?.map(studentId => {
+              const student = users.find(u => u.id === studentId);
 
-            const grades = course.studentGrades && course.studentGrades[studentId]
-              ? [...course.studentGrades[studentId]]
-              : [];
+              const grades = course.studentGrades && course.studentGrades[studentId]
+                ? [...course.studentGrades[studentId]]
+                : [];
 
-            const attendance: { sessionId: string; present: boolean | undefined; }[] = [];
-            if (course.sessions && course.sessions.length > 0) {
-              course.sessions.forEach(session => {
-                const isPresent = course.studentAttendance &&
-                                  course.studentAttendance[studentId] &&
-                                  course.studentAttendance[studentId][session.id] === true;
+              const attendance: { sessionId: string; present: boolean | undefined; }[] = [];
+              if (course.sessions && course.sessions.length > 0) {
+                course.sessions.forEach(session => {
+                  const isPresent = course.studentAttendance &&
+                                    course.studentAttendance[studentId] &&
+                                    course.studentAttendance[studentId][session.id] === true;
 
-                attendance.push({
-                  sessionId: session.id,
-                  present: isPresent
+                  attendance.push({
+                    sessionId: session.id,
+                    present: isPresent
+                  });
                 });
-              });
-            }
+              }
+
+              return {
+                id: studentId,
+                name: student?.fullName || 'Unknown Student',
+                email: student?.email || '',
+                grades: grades,
+                attendance: attendance
+              };
+            }) || [];
 
             return {
-              id: studentId,
-              name: student?.fullName || 'Unknown Student',
-              email: student?.email || '',
-              grades: grades,
-              attendance: attendance
+              ...course,
+              students: students
             };
-          }) || [];
+          });
+      }
 
-          return {
-            ...course,
-            students: students
-          };
-        });
-    }
-
-    this.spinner.hide();
-  });
+      this.spinner.hide();
+    });
   }
 
   ngOnDestroy() {
@@ -254,5 +255,4 @@ export class TeacherDashComponent {
       year: 'numeric'
     });
   }
-
 }
