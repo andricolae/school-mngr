@@ -2,6 +2,27 @@
   <app-spinner />
   <app-confirmation-dialog #dialog />
 
+  @if (showStudentData && selectedCourseId) {
+    <div class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mx-4">
+        <div class="p-4 flex justify-between items-center border-b">
+          <h3 class="text-lg font-semibold">Student Data</h3>
+          <button
+            (click)="closeStudentData()"
+            class="text-gray-500 hover:text-gray-700"
+            aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <app-student-data [courseId]="selectedCourseId"></app-student-data>
+        </div>
+      </div>
+    </div>
+  }
+
   <div class="bg-blue-400 text-white p-4 text-lg font-semibold text-center">
     Admin Dashboard
   </div>
