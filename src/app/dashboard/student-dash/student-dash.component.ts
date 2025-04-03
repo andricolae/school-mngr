@@ -65,71 +65,12 @@ export class StudentDashComponent {
   private courseSubscription?: Subscription;
   private sessionCheckInterval: any;
 
-  // commonSessions: ClassSession[] = [
-  //   { id: 'session1', date: new Date(2025, 2, 5), startTime: '13:00', endTime: '15:00', attended: false },
-  //   { id: 'session2', date: new Date(2025, 2, 10), startTime: '13:00', endTime: '15:00', attended: false },
-  //   { id: 'session3', date: new Date(2025, 2, 15), startTime: '13:00', endTime: '15:00', attended: true },
-  //   { id: 'session4', date: new Date(2025, 2, 20), startTime: '13:00', endTime: '15:00', attended: true },
-  //   { id: 'session5', date: new Date(2025, 2, 25), startTime: '13:00', endTime: '15:00', attended: false },
-  //   { id: 'session6', date: new Date(2025, 2, 30), startTime: '16:00', endTime: '17:00', attended: false },
-  //   { id: 'session7', date: new Date(2025, 2, 31), startTime: '13:00', endTime: '15:00', attended: false }
-  // ];
-
-  // enrolledCourses: EnrolledCourse[] = [
-  //   {
-  //     id: 'course1',
-  //     name: 'Biology Basics',
-  //     teacher: 'Frank Thompson',
-  //     schedule: 'Mon & Wed 10:00',
-  //     grades: [
-  //       { title: 'Midterm Exam', value: 9.5, date: '2025-02-15' },
-  //       { title: 'Lab Report 1', value: 10, date: '2025-01-25' },
-  //       { title: 'Lab Report 2', value: 10, date: '2025-03-10' }
-  //     ],
-  //     sessions: [...this.commonSessions]
-  //   },
-  //   {
-  //     id: 'course3',
-  //     name: 'Computer Science 1',
-  //     teacher: 'Isla Moore',
-  //     schedule: 'Tue & Thu 13:00',
-  //     grades: [
-  //       { title: 'Algorithm Quiz', value: 8.5, date: '2025-02-10' },
-  //       { title: 'Programming Project', value: 9.5, date: '2025-03-01' }
-  //     ],
-  //     sessions: [...this.commonSessions]
-  //   },
-  //   {
-  //     id: 'course5',
-  //     name: 'Art & Design',
-  //     teacher: 'Diana Lee',
-  //     schedule: 'Fri 15:00',
-  //     grades: [
-  //       { title: 'Portfolio Review', value: 9.5, date: '2025-02-20' },
-  //       { title: 'Design Theory Test', value: 7.0, date: '2025-01-30' },
-  //       { title: 'Final Project', value: 8.5, date: '2025-03-15' }
-  //     ],
-  //     sessions: [...this.commonSessions]
-  //   }
-  // ];
-
   constructor(private store: Store, private spinner: SpinnerService) {}
 
   ngOnInit() {
     this.spinner.show();
     this.store.dispatch(CourseActions.loadCourses());
     this.store.dispatch(UserActions.loadUsers());
-
-    // this.users$.subscribe(users => {
-    //   this.loggedUser = users.find(user => user.email === JSON.parse(localStorage.getItem('userData')!).email)!;
-    // });
-    // this.currentDate = new Date();
-    // setTimeout(() => {
-    //   this.spinner.hide();
-    // }, 1000);
-    // this.sessionCheckInterval = setInterval(() => {
-    //   this.checkSessionStatuses();
-    // }, 60000);
 
     this.userSubscription = this.currentUser$.subscribe(users => {
       if (users.length > 0) {
@@ -140,19 +81,6 @@ export class StudentDashComponent {
         }
       }
     });
-
-    // this.courseSubscription = this.availableCourses$.subscribe(courses => {
-    //   if (courses.length > 0) {
-    //     this.enrolledCourseIds = courses
-    //       .filter(course =>
-    //         course.enrolledStudents?.includes(this.loggedUser.id!)
-    //       )
-    //       .map(course => course.id!)
-    //       .filter(id => id);
-
-    //     this.updateEnrolledCourses(courses);
-    //   }
-    // });
 
     this.courseSubscription = combineLatest([this.availableCourses$, this.currentUser$]).subscribe(([courses, users]) => {
       if (courses.length > 0 && this.loggedUser && this.loggedUser.id) {
@@ -338,7 +266,6 @@ export class StudentDashComponent {
   markAttendance(courseId: string, sessionId: string): void {
     this.spinner.show();
 
-    // Dispatch action to update attendance in Firebase
     this.store.dispatch(CourseActions.updateStudentAttendance({
       courseId,
       studentId: this.loggedUser.id!,
@@ -346,7 +273,6 @@ export class StudentDashComponent {
       present: true
     }));
 
-    // Update local state for immediate UI feedback
     const courseIndex = this.enrolledCourses.findIndex(course => course.id === courseId);
     if (courseIndex !== -1) {
       const sessionIndex = this.enrolledCourses[courseIndex].sessions.findIndex(
@@ -392,7 +318,6 @@ export class StudentDashComponent {
   }
 
   private updateEnrolledCourses(courses: Course[]): void {
-    // Common dummy data for demonstrations
     const commonGrades: CourseGrade[] = [
       { title: 'Midterm Exam', value: 9.5, date: '2025-02-15' },
       { title: 'Lab Report 1', value: 8.8, date: '2025-01-25' },
@@ -422,71 +347,4 @@ export class StudentDashComponent {
       })
       .filter(course => course !== null) as EnrolledCourse[];
   }
-
-//   private updateDisplayedCourses() {
-//     const allCourses: EnrolledCourse[] = [
-//       {
-//         id: 'course1',
-//         name: 'Biology Basics',
-//         teacher: 'Frank Thompson',
-//         schedule: 'Mon & Wed 10:00',
-//         grades: [
-//           { title: 'Midterm Exam', value: 9.5, date: '2025-02-15' },
-//           { title: 'Lab Report 1', value: 10, date: '2025-01-25' },
-//           { title: 'Lab Report 2', value: 10.5, date: '2025-03-10' }
-//         ],
-//         sessions: [...this.commonSessions]
-//       },
-//       {
-//         id: 'course2',
-//         name: 'Mathematics 101',
-//         teacher: 'Sarah Johnson',
-//         schedule: 'Mon & Fri 9:00',
-//         grades: [],
-//         sessions: [...this.commonSessions]
-//       },
-//       {
-//         id: 'course3',
-//         name: 'Computer Science 1',
-//         teacher: 'Isla Moore',
-//         schedule: 'Tue & Thu 13:00',
-//         grades: [
-//           { title: 'Algorithm Quiz', value: 8.5, date: '2025-02-10' },
-//           { title: 'Programming Project', value: 9.5, date: '2025-03-01' }
-//         ],
-//         sessions: [...this.commonSessions]
-//       },
-//       {
-//         id: 'course4',
-//         name: 'Physics Fundamentals',
-//         teacher: 'Robert Chen',
-//         schedule: 'Wed & Fri 11:00',
-//         grades: [],
-//         sessions: [...this.commonSessions]
-//       },
-//       {
-//         id: 'course5',
-//         name: 'Art & Design',
-//         teacher: 'Diana Lee',
-//         schedule: 'Fri 15:00',
-//         grades: [
-//           { title: 'Portfolio Review', value: 9.5, date: '2025-02-20' },
-//           { title: 'Design Theory Test', value: 9.0, date: '2025-01-30' },
-//           { title: 'Final Project', value: 10.0, date: '2025-03-15' }
-//         ],
-//         sessions: [...this.commonSessions]
-//       },
-//       {
-//         id: 'course6',
-//         name: 'History of Europe',
-//         teacher: 'Michael Brown',
-//         schedule: 'Tue 14:00',
-//         grades: [],
-//         sessions: [...this.commonSessions]
-//       }
-//     ];
-
-//     this.enrolledCourses = allCourses
-//       .filter(course => this.enrolledCourseIds.includes(course.id));
-//   }
 }

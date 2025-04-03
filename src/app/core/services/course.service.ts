@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, deleteDoc, doc, updateDoc, getDoc, arrayUnion, arrayRemove } from '@angular/fire/firestore';
-import { from, map, Observable, of, switchMap } from 'rxjs';
+import { from, map, Observable, switchMap } from 'rxjs';
 import { Course } from '../user.model';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +19,6 @@ getCourses(): Observable<Course[]> {
   return collectionData(this.coursesCollection, { idField: 'id' }).pipe(
     map(courses => {
       return courses.map(course => {
-        // Handle sessions dates
         if (course['sessions']) {
           course['sessions'] = course['sessions'].map((session: any) => {
             if (session.date && typeof session.date.toDate === 'function') {
@@ -34,12 +33,10 @@ getCourses(): Observable<Course[]> {
           course['sessions'] = [];
         }
 
-        // Ensure studentGrades is properly initialized
         if (!course['studentGrades']) {
           course['studentGrades'] = {};
         }
 
-        // Ensure studentAttendance is properly initialized
         if (!course['studentAttendance']) {
           course['studentAttendance'] = {};
         }
@@ -75,7 +72,6 @@ getCourses(): Observable<Course[]> {
   }
 
   addCourse(course: Omit<Course, 'id'>): Observable<string> {
-    // return from(addDoc(this.coursesCollection, course).then(ref => ref.id));
     const courseToAdd = {
       ...course,
       sessions: course.sessions || [],
@@ -122,15 +118,12 @@ getCourses(): Observable<Course[]> {
         if (docSnap.exists()) {
           const courseData = docSnap.data();
 
-          // Create or update studentGrades field
           let studentGrades = courseData['studentGrades'] || {};
 
-          // Create array for this student if it doesn't exist
           if (!studentGrades[studentId]) {
             studentGrades[studentId] = [];
           }
 
-          // Add the new grade with ID
           const newGrade = {
             id: gradeId,
             title: grade.title,
@@ -140,7 +133,6 @@ getCourses(): Observable<Course[]> {
 
           studentGrades[studentId].push(newGrade);
 
-          // Update the document and return the grade ID
           return from(updateDoc(courseDoc, { studentGrades })).pipe(
             map(() => gradeId)
           );
@@ -158,18 +150,14 @@ getCourses(): Observable<Course[]> {
         if (docSnap.exists()) {
           const courseData = docSnap.data();
 
-          // Create or update studentAttendance field
           let studentAttendance = courseData['studentAttendance'] || {};
 
-          // Create object for this student if it doesn't exist
           if (!studentAttendance[studentId]) {
             studentAttendance[studentId] = {};
           }
 
-          // Set attendance for this session
           studentAttendance[studentId][sessionId] = present;
 
-          // Update the document
           return from(updateDoc(courseDoc, { studentAttendance }));
         }
         throw new Error('Course not found');

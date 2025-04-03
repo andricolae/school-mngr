@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as CourseActions from './course.actions';
-import { catchError, from, map, mergeMap, of, tap } from 'rxjs';
+import { catchError, map, mergeMap, of } from 'rxjs';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/user.model';
 import { NotificationComponent } from '../../core/notification/notification.component';
@@ -35,7 +35,6 @@ export class CoursesEffects {
           .addCourse({ ...course})
           .pipe(
             map((courseId) => {
-                // console.log("Firebase returned courseId:", courseId);
                 NotificationComponent.show('success', 'Course added successfully');
                 return CourseActions.addCourseSuccess({
                   course: {

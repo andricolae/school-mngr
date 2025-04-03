@@ -170,12 +170,4 @@ export const coursesReducer = createReducer(
     };
   })
 
-    // on(
-    //     CourseActions.addCourseSuccess,
-    //     CourseActions.addCourseFail,
-    //     (state) => ({
-    //         ...state,
-    //         loading: false
-    //     })
-    // ),
 );

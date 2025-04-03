@@ -20,15 +20,6 @@ export class CourseEnrollmentComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() enrollmentChanged = new EventEmitter<string[]>();
 
-  // availableCourses = [
-  //   { id: 'course1', name: 'Biology Basics', teacher: 'Frank Thompson', schedule: 'Mon & Wed 10:00' },
-  //   { id: 'course2', name: 'Mathematics 101', teacher: 'Sarah Johnson', schedule: 'Mon & Fri 9:00' },
-  //   { id: 'course3', name: 'Computer Science 1', teacher: 'Isla Moore', schedule: 'Tue & Thu 13:00' },
-  //   { id: 'course4', name: 'Physics Fundamentals', teacher: 'Robert Chen', schedule: 'Wed & Fri 11:00' },
-  //   { id: 'course5', name: 'Art & Design', teacher: 'Diana Lee', schedule: 'Fri 15:00' },
-  //   { id: 'course6', name: 'History of Europe', teacher: 'Michael Brown', schedule: 'Tue 14:00' }
-  // ];
-
   availableCourses$: Observable<Course[]> = this.store.select(CourseSelectors.selectAvailableCourses);
   loading$ = this.store.select(CourseSelectors.selectCoursesLoading);
   error$ = this.store.select(CourseSelectors.selectCoursesError);

@@ -6,10 +6,6 @@ import { firebaseConfig } from '../../environment';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideStore } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-// import { coursesReducer } from './state/courses/courses.reducer';
-// import { CoursesEffects } from './state/courses/courses.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,9 +15,5 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideFirestore(() => getFirestore()),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    // provideStore({ courses: coursesReducer }),
-    // provideEffects([
-    //   CoursesEffects,
-    // ])
   ]
 };

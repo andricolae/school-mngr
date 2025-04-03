@@ -6,7 +6,6 @@ import { TeacherDashComponent } from './dashboard/teacher-dash/teacher-dash.comp
 import { StudentDashComponent } from './dashboard/student-dash/student-dash.component';
 import { UnauthorizedComponent } from './core/unauthorized.component';
 import { HomeComponent } from './core/home.component';
-import { AuthGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guards';
 
 export const routes: Routes = [

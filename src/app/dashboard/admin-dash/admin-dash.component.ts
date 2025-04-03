@@ -12,46 +12,6 @@ import { ConfirmationDialogComponent } from "../../core/confirmation-dialog/conf
 import { selectAllUsers } from '../../state/users/user.selector';
 import { v4 as uuidv4 } from 'uuid';
 
-interface CourseGrade {
-  title: string;
-  value: number;
-  date: string;
-}
-
-interface ClassSession {
-  id: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-}
-
-interface StudentGrade {
-  id: string;
-  title: string;
-  value: number;
-  date: string;
-}
-
-interface StudentAttendance {
-  id: string;
-  sessionId: string;
-  status: 'present' | 'absent';
-}
-
-interface EnrolledStudent {
-  id: string;
-  name: string;
-  email: string;
-  grades: StudentGrade[];
-  attendance: StudentAttendance[];
-}
-
-interface CourseData {
-  id: string;
-  sessions: ClassSession[];
-  enrolledStudents: EnrolledStudent[];
-}
-
 @Component({
   selector: 'app-admin-dash',
   standalone: true,
@@ -87,157 +47,6 @@ export class AdminDashComponent {
   };
   editingSessionIndex: number = -1;
 
-  // courseData: CourseData[] = [
-  //   {
-  //     id: '8wsabe26wHRwtWVovATi',
-  //     sessions: [
-  //       { id: 'session1', date: new Date(2025, 2, 5), startTime: '13:00', endTime: '15:00' },
-  //       { id: 'session2', date: new Date(2025, 2, 10), startTime: '13:00', endTime: '15:00' },
-  //       { id: 'session3', date: new Date(2025, 2, 15), startTime: '13:00', endTime: '15:00' },
-  //       { id: 'session4', date: new Date(2025, 2, 20), startTime: '13:00', endTime: '15:00' },
-  //       { id: 'session5', date: new Date(2025, 2, 25), startTime: '13:00', endTime: '15:00' },
-  //       { id: 'session6', date: new Date(2025, 2, 30), startTime: '13:00', endTime: '15:00' }
-  //     ],
-  //     enrolledStudents: [
-  //       {
-  //         id: 'student1',
-  //         name: 'Alex Johnson',
-  //         email: 'alex@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Midterm Exam', value: 9.5, date: '2025-02-15' },
-  //           { id: 'grade2', title: 'Lab Report 1', value: 8.8, date: '2025-01-25' },
-  //           { id: 'grade3', title: 'Lab Report 2', value: 7.5, date: '2025-03-10' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'present' },
-  //           { id: 'att2', sessionId: 'session2', status: 'present' },
-  //           { id: 'att3', sessionId: 'session3', status: 'present' },
-  //           { id: 'att4', sessionId: 'session4', status: 'absent' },
-  //           { id: 'att5', sessionId: 'session5', status: 'present' },
-  //           { id: 'att6', sessionId: 'session6', status: 'present' }
-  //         ]
-  //       },
-  //       {
-  //         id: 'student2',
-  //         name: 'Emma Wilson',
-  //         email: 'emma@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Midterm Exam', value: 8.5, date: '2025-02-15' },
-  //           { id: 'grade2', title: 'Lab Report 1', value: 9.2, date: '2025-01-25' },
-  //           { id: 'grade3', title: 'Lab Report 2', value: 8.7, date: '2025-03-10' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'present' },
-  //           { id: 'att2', sessionId: 'session2', status: 'absent' },
-  //           { id: 'att3', sessionId: 'session3', status: 'present' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' },
-  //           { id: 'att5', sessionId: 'session5', status: 'present' },
-  //           { id: 'att6', sessionId: 'session6', status: 'absent' }
-  //         ]
-  //       },
-  //       {
-  //         id: 'student3',
-  //         name: 'Michael Brown',
-  //         email: 'michael@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Midterm Exam', value: 6.5, date: '2025-02-15' },
-  //           { id: 'grade2', title: 'Lab Report 1', value: 7.0, date: '2025-01-25' },
-  //           { id: 'grade3', title: 'Lab Report 2', value: 8.0, date: '2025-03-10' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'absent' },
-  //           { id: 'att2', sessionId: 'session2', status: 'absent' },
-  //           { id: 'att3', sessionId: 'session3', status: 'present' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' },
-  //           { id: 'att5', sessionId: 'session5', status: 'present' },
-  //           { id: 'att6', sessionId: 'session6', status: 'present' }
-  //         ]
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     id: 'Budcdq3sbZPIISnqRZls',
-  //     sessions: [
-  //       { id: 'session1', date: new Date(2025, 2, 7), startTime: '10:00', endTime: '12:00' },
-  //       { id: 'session2', date: new Date(2025, 2, 14), startTime: '10:00', endTime: '12:00' },
-  //       { id: 'session3', date: new Date(2025, 2, 21), startTime: '10:00', endTime: '12:00' },
-  //       { id: 'session4', date: new Date(2025, 2, 28), startTime: '10:00', endTime: '12:00' }
-  //     ],
-  //     enrolledStudents: [
-  //       {
-  //         id: 'student1',
-  //         name: 'Alex Johnson',
-  //         email: 'alex@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Quiz 1', value: 8.0, date: '2025-02-07' },
-  //           { id: 'grade2', title: 'Midterm', value: 7.5, date: '2025-02-21' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'present' },
-  //           { id: 'att2', sessionId: 'session2', status: 'present' },
-  //           { id: 'att3', sessionId: 'session3', status: 'absent' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' }
-  //         ]
-  //       },
-  //       {
-  //         id: 'student4',
-  //         name: 'Sophia Lee',
-  //         email: 'sophia@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Quiz 1', value: 9.5, date: '2025-02-07' },
-  //           { id: 'grade2', title: 'Midterm', value: 9.2, date: '2025-02-21' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'present' },
-  //           { id: 'att2', sessionId: 'session2', status: 'present' },
-  //           { id: 'att3', sessionId: 'session3', status: 'present' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' }
-  //         ]
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     id: 'yCBfdQqqdoDQp0BalGtF',
-  //     sessions: [
-  //       { id: 'session1', date: new Date(2025, 2, 6), startTime: '14:00', endTime: '16:00' },
-  //       { id: 'session2', date: new Date(2025, 2, 13), startTime: '14:00', endTime: '16:00' },
-  //       { id: 'session3', date: new Date(2025, 2, 20), startTime: '14:00', endTime: '16:00' },
-  //       { id: 'session4', date: new Date(2025, 2, 27), startTime: '14:00', endTime: '16:00' }
-  //     ],
-  //     enrolledStudents: [
-  //       {
-  //         id: 'student2',
-  //         name: 'Emma Wilson',
-  //         email: 'emma@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Presentation', value: 10.0, date: '2025-02-13' },
-  //           { id: 'grade2', title: 'Final Project', value: 9.8, date: '2025-03-27' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'present' },
-  //           { id: 'att2', sessionId: 'session2', status: 'present' },
-  //           { id: 'att3', sessionId: 'session3', status: 'absent' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' }
-  //         ]
-  //       },
-  //       {
-  //         id: 'student5',
-  //         name: 'James Taylor',
-  //         email: 'james@example.com',
-  //         grades: [
-  //           { id: 'grade1', title: 'Presentation', value: 7.5, date: '2025-02-13' },
-  //           { id: 'grade2', title: 'Final Project', value: 8.2, date: '2025-03-27' }
-  //         ],
-  //         attendance: [
-  //           { id: 'att1', sessionId: 'session1', status: 'absent' },
-  //           { id: 'att2', sessionId: 'session2', status: 'present' },
-  //           { id: 'att3', sessionId: 'session3', status: 'present' },
-  //           { id: 'att4', sessionId: 'session4', status: 'present' }
-  //         ]
-  //       }
-  //     ]
-  //   }
-  // ];
 
   constructor(private store: Store, private spinner: SpinnerService) {}
 
@@ -288,8 +97,6 @@ export class AdminDashComponent {
       }));
     }
     this.resetCourseForm();
-    // this.newCourse = { name: '', teacher: '', schedule: '' };
-    // this.editingCourseId = null;
   }
 
   editCourse(course: Course) {
@@ -340,8 +147,6 @@ export class AdminDashComponent {
       user: { ...this.newUser, id: this.editingUserId! }
     }));
     this.resetUserForm();
-    // this.newUser = { email: '', fullName: '', role: '' };
-    // this.editingUserId = null;
   }
 
   openAddSessionModal(course: Course): void {
@@ -390,111 +195,6 @@ export class AdminDashComponent {
   closeSessionModal(): void {
     this.showSessionModal = false;
   }
-
-  // getEnrolledStudents(courseId: string): EnrolledStudent[] {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   return course ? course.enrolledStudents : [];
-  // }
-
-  // getGradeHeaders(courseId: string): string[] {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return [];
-
-  //   const allGradeTitles = new Set<string>();
-  //   course.enrolledStudents.forEach(student => {
-  //     student.grades.forEach(grade => {
-  //       allGradeTitles.add(grade.title);
-  //     });
-  //   });
-  //   return Array.from(allGradeTitles);
-  // }
-
-  // getStudentGrade(courseId: string, studentId: string, gradeTitle: string): number | null {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return null;
-
-  //   const student = course.enrolledStudents.find(s => s.id === studentId);
-  //   if (!student) return null;
-
-  //   const grade = student.grades.find(g => g.title === gradeTitle);
-  //   return grade ? grade.value : null;
-  // }
-
-  // getStudentMeanGrade(courseId: string, studentId: string): string {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return 'N/A';
-
-  //   const student = course.enrolledStudents.find(s => s.id === studentId);
-  //   if (!student || student.grades.length === 0) return 'N/A';
-
-  //   const sum = student.grades.reduce((acc, grade) => acc + grade.value, 0);
-  //   const mean = sum / student.grades.length;
-  //   return mean.toFixed(1);
-  // }
-
-  // getSessionDates(courseId: string): Date[] {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return [];
-
-  //   return course.sessions.map(session => session.date);
-  // }
-
-  // getAttendanceStatus(courseId: string, studentId: string, sessionDate: Date): string {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return 'N/A';
-
-  //   const student = course.enrolledStudents.find(s => s.id === studentId);
-  //   if (!student) return 'N/A';
-
-  //   const session = course.sessions.find(s =>
-  //     s.date.getFullYear() === sessionDate.getFullYear() &&
-  //     s.date.getMonth() === sessionDate.getMonth() &&
-  //     s.date.getDate() === sessionDate.getDate()
-  //   );
-  //   if (!session) return 'N/A';
-
-  //   const attendance = student.attendance.find(a => a.sessionId === session.id);
-  //   return attendance ? attendance.status.charAt(0).toUpperCase() + attendance.status.slice(1) : 'N/A';
-  // }
-
-  // getAttendanceStatusClass(courseId: string, studentId: string, sessionDate: Date): string {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return '';
-
-  //   const student = course.enrolledStudents.find(s => s.id === studentId);
-  //   if (!student) return '';
-
-  //   const session = course.sessions.find(s =>
-  //     s.date.getFullYear() === sessionDate.getFullYear() &&
-  //     s.date.getMonth() === sessionDate.getMonth() &&
-  //     s.date.getDate() === sessionDate.getDate()
-  //   );
-  //   if (!session) return '';
-
-  //   const attendance = student.attendance.find(a => a.sessionId === session.id);
-  //   if (!attendance) return '';
-
-  //   switch (attendance.status) {
-  //     case 'present':
-  //       return 'bg-green-100 text-green-800';
-  //     case 'absent':
-  //       return 'bg-red-100 text-red-800';
-  //     default:
-  //       return '';
-  //   }
-  // }
-
-  // getStudentAttendanceRate(courseId: string, studentId: string): number {
-  //   const course = this.courseData.find(c => c.id === courseId);
-  //   if (!course) return 0;
-
-  //   const student = course.enrolledStudents.find(s => s.id === studentId);
-  //   if (!student || student.attendance.length === 0) return 0;
-
-  //   const presentCount = student.attendance.filter(a => a.status === 'present').length;
-  //   const attendanceRate = (presentCount / student.attendance.length) * 100;
-  //   return Math.round(attendanceRate);
-  // }
 
   resetCourseForm(): void {
     this.newCourse = {
