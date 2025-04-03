@@ -11,11 +11,12 @@ import { SpinnerService } from '../../core/services/spinner.service';
 import { ConfirmationDialogComponent } from "../../core/confirmation-dialog/confirmation-dialog.component";
 import { selectAllUsers } from '../../state/users/user.selector';
 import { v4 as uuidv4 } from 'uuid';
+import { StudentDataComponent } from './student-data/student-data.component';
 
 @Component({
   selector: 'app-admin-dash',
   standalone: true,
-  imports: [FormsModule, AsyncPipe, SpinnerComponent, ConfirmationDialogComponent],
+  imports: [FormsModule, AsyncPipe, SpinnerComponent, ConfirmationDialogComponent, StudentDataComponent],
   templateUrl: './admin-dash.component.html',
 })
 export class AdminDashComponent {
@@ -35,6 +36,7 @@ export class AdminDashComponent {
   courses$ = this.store.select(selectAllCourses);
   editingCourseId: string | null = null;
   selectedCourseId: string | undefined = '';
+  showStudentData = false;
 
   activeTab: 'grades' | 'attendance' = 'grades';
 
@@ -119,8 +121,13 @@ export class AdminDashComponent {
   }
 
   viewStudentData(course: Course): void {
-    this.selectedCourseId = course.id;
-    this.activeTab = 'grades';
+    this.selectedCourseId = course.id || undefined;
+    this.showStudentData = true;
+  }
+
+  closeStudentData(): void {
+    this.selectedCourseId = undefined;
+    this.showStudentData = false;
   }
 
   async deleteUser(userId: string): Promise<void> {
