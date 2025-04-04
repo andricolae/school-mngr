@@ -1,67 +1,68 @@
 import { createReducer, on } from '@ngrx/store';
+import { User } from '../../core/user.model';
 import * as AuthActions from './auth.actions';
-import { initialAuthState } from './auth.state';
+
+export interface AuthState {
+  user: User | null;
+  authError: string | null;
+  successMessage: string | null;
+  loading: boolean;
+}
+
+const initialState: AuthState = {
+  user: null,
+  authError: null,
+  successMessage: null,
+  loading: false
+};
 
 export const authReducer = createReducer(
-  initialAuthState,
-
-  on(AuthActions.login, (state) => ({
+  initialState,
+  on(AuthActions.loginStart, AuthActions.signupStart, (state) => ({
     ...state,
-    loading: true,
-    error: null
+    authError: null,
+    successMessage: null,
+    loading: true
+  })),
+  on(AuthActions.loginSuccess, (state, action) => ({
+    ...state,
+    user: action.user,
+    authError: null,
+    loading: false
+  })),
+  on(AuthActions.loginFail, AuthActions.signupFail, (state, action) => ({
+    ...state,
+    authError: action.error,
+    loading: false
+  })),
+  on(AuthActions.signupSuccess, (state, action) => ({
+    ...state,
+    successMessage: action.message,
+    authError: null,
+    loading: false
+  })),
+  on(AuthActions.logout, (state) => ({
+    ...state,
+    user: null
   })),
 
-  on(AuthActions.loginSuccess, (state, { user }) => ({
+  on(AuthActions.resetPasswordStart, (state) => ({
     ...state,
-    user,
-    loading: false,
-    error: null
+    authError: null,
+    successMessage: null,
+    loading: true
   })),
-
-  on(AuthActions.loginFailure, (state, { error }) => ({
+  on(AuthActions.resetPasswordSuccess, (state, action) => ({
     ...state,
-    user: null,
-    loading: false,
-    error
+    successMessage: action.message,
+    authError: null,
+    loading: false
   })),
-
-  on(AuthActions.signup, (state) => ({
+  on(AuthActions.resetPasswordFail, (state, action) => ({
     ...state,
-    loading: true,
-    error: null
-  })),
-
-  on(AuthActions.signupSuccess, (state) => ({
-    ...state,
-    loading: false,
-    error: null
-  })),
-
-  on(AuthActions.signupFailure, (state, { error }) => ({
-    ...state,
-    loading: false,
-    error
-  })),
-
-  on(AuthActions.logout, () => ({
-    ...initialAuthState
-  })),
-
-  on(AuthActions.resetPassword, (state) => ({
-    ...state,
-    loading: true,
-    error: null
-  })),
-
-  on(AuthActions.resetPasswordSuccess, (state) => ({
-    ...state,
-    loading: false,
-    error: null
-  })),
-
-  on(AuthActions.resetPasswordFailure, (state, { error }) => ({
-    ...state,
-    loading: false,
-    error
+    authError: action.error,
+    loading: false
   }))
+
+
 );

@@ -1,12 +1,9 @@
-// src/app/state/auth/auth.effects.ts
 import { Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, tap, exhaustMap } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { Actions, ofType, createEffect } from '@ngrx/effects';
 import * as AuthActions from './auth.actions';
-import { NotificationComponent } from '../../core/notification/notification.component';
+import { AuthService } from '../../core/services/auth.service';
+import { catchError, map, mergeMap, of, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthEffects {
@@ -18,107 +15,56 @@ export class AuthEffects {
 
   login$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.login),
-      exhaustMap(({ email, password }) =>
-        this.authService.login(email, password).pipe(
-          map((response) => {
-            return AuthActions.loginSuccess({ user: this.authService.user.getValue()! });
-          }),
-          catchError((error) => {
-            NotificationComponent.show('alert', error.message || 'An error occurred during login');
-            return of(AuthActions.loginFailure({ error: error.message }));
-          })
+      ofType(AuthActions.loginStart),
+      mergeMap((action) =>
+        this.authService.login(action.email, action.password).pipe(
+          tap(user => console.log('Login user received with roles:', user)),
+          map((user) => AuthActions.loginSuccess({ user })),
+          catchError((error) => of(AuthActions.loginFail({ error: error.message })))
         )
       )
     )
   );
 
-  loginSuccess$ = createEffect(
+  loginRedirect$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
-        tap(() => {
-          this.router.navigate(['/home']);
-        })
+        tap(() => this.router.navigate(['/home']))
       ),
     { dispatch: false }
   );
 
   signup$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.signup),
-      exhaustMap(({ email, password, name, role }) =>
-        this.authService.signup(email, password, name, role).pipe(
-          map(() => {
-            NotificationComponent.show('success', 'Account created! Please log in.');
-            return AuthActions.signupSuccess();
-          }),
+      ofType(AuthActions.signupStart),
+      mergeMap((action) =>
+        this.authService.signup(action.email, action.password, action.name, action.role).pipe(
+          tap((res) => console.log('Signup effect received:', res)),
+          map(() =>
+            AuthActions.signupSuccess({ message: 'Verification email sent! Please check your inbox.' })
+          ),
           catchError((error) => {
-            NotificationComponent.show('alert', 'Failed to register: ' + error.message);
-            return of(AuthActions.signupFailure({ error: error.message }));
+            console.error('Signup effect error:', error);
+            return of(AuthActions.signupFail({ error: error.message }));
           })
         )
       )
-    )
-  );
-
-  signupSuccess$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(AuthActions.signupSuccess),
-        tap(() => {
-          this.router.navigate(['/login']);
-        })
-      ),
-    { dispatch: false }
-  );
-
-  logout$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(AuthActions.logout),
-        tap(() => {
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        })
-      ),
-    { dispatch: false }
-  );
-
-  autoLogin$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AuthActions.autoLogin),
-      map(() => {
-        const user = this.authService.user.getValue();
-        if (user) {
-          return AuthActions.loginSuccess({ user });
-        }
-        return { type: '[Auth] Auto Login Failed' };
-      })
     )
   );
 
   resetPassword$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.resetPassword),
-      exhaustMap(({ email }) =>
-        this.authService.resetPassword(email).pipe(
-          map(() => {
-            NotificationComponent.show(
-              'success',
-              'If your email has been registered, a password reset link has been sent to you!'
-            );
-            return AuthActions.resetPasswordSuccess();
-          }),
-          catchError((error) => {
-            NotificationComponent.show(
-              'success',
-              'If your email has been registered, a password reset link has been sent to you!'
-            );
-            return of(AuthActions.resetPasswordFailure({ error: error.message }));
-          })
+      ofType(AuthActions.resetPasswordStart),
+      mergeMap(action =>
+        this.authService.resetPassword(action.email).pipe(
+          map(() =>
+            AuthActions.resetPasswordSuccess({ message: 'If an account exists with this email, a reset link has been sent. Check your inbox!' })
+          ),
+          catchError((error) => of(AuthActions.resetPasswordFail({ error: error.message })))
         )
       )
     )
   );
+
 }
