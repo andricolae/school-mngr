@@ -13,6 +13,8 @@ import { CoursesEffects } from './app/state/courses/course.effects';
 import { coursesReducer } from './app/state/courses/course.reducer';
 import { UsersEffects } from './app/state/users/user.effects';
 import { usersReducer } from './app/state/users/user.reducer';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { isDevMode } from '@angular/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -26,6 +28,14 @@ bootstrapApplication(AppComponent, {
     provideEffects([
       CoursesEffects,
       UsersEffects
-    ])
+    ]),
+    provideStoreDevtools({
+      maxAge: 25,
+      logOnly: !isDevMode(),
+      autoPause: true,
+      trace: false,
+      traceLimit: 75,
+      connectInZone: true
+    })
   ],
 });
