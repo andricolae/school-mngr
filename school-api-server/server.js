@@ -1,589 +1,11 @@
-// // server.js
-// const express = require('express');
-// const cors = require('cors');
-// const bodyParser = require('body-parser');
-// const https = require('https');
-// const path = require('path');
-// const { sign } = require('jsonwebtoken');
-
-// // Create Express app
-// const app = express();
-
-// // Set up middleware
-// app.use(cors());
-// app.use(bodyParser.json());
-// app.use((req, res, next) => {
-//   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-//   next();
-// });
-
-// // Firebase connection state
-// let firebaseConnected = false;
-// let projectId = process.env.FIREBASE_PROJECT_ID || 'not connected';
-
-// // Simple Firebase REST API implementation for Vercel environment
-// const firebase = {
-//   token: null,
-//   tokenExpiry: 0,
-
-//   // Generate a new Firebase auth token
-//   async getAuthToken() {
-//     if (this.token && this.tokenExpiry > Date.now()) {
-//       return this.token;
-//     }
-
-//     try {
-//       // Create a JWT token for authentication with Firebase
-//       const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
-//       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-
-//       // Token expiration (1 hour from now)
-//       const expiryTime = Math.floor(Date.now() / 1000) + 3600;
-
-//       // Create the JWT token
-//       const token = sign({
-//         iss: clientEmail,
-//         sub: clientEmail,
-//         aud: 'https://firestore.googleapis.com/google.firestore.v1.Firestore',
-//         iat: Math.floor(Date.now() / 1000),
-//         exp: expiryTime,
-//       }, privateKey, { algorithm: 'RS256' });
-
-//       this.token = token;
-//       this.tokenExpiry = expiryTime * 1000; // Convert to milliseconds
-//       return token;
-//     } catch (error) {
-//       console.error('Error generating Firebase auth token:', error);
-//       throw error;
-//     }
-//   },
-
-//   // Make a request to the Firebase REST API
-//   async makeRequest(method, path, data = null) {
-//     try {
-//       const token = await this.getAuthToken();
-//       const projectId = process.env.FIREBASE_PROJECT_ID;
-
-//       return new Promise((resolve, reject) => {
-//         const options = {
-//           hostname: 'firestore.googleapis.com',
-//           path: `/v1/projects/${projectId}/databases/(default)/documents${path}`,
-//           method: method,
-//           headers: {
-//             'Authorization': `Bearer ${token}`,
-//             'Content-Type': 'application/json',
-//           }
-//         };
-
-//         const req = https.request(options, (res) => {
-//           let responseData = '';
-
-//           res.on('data', (chunk) => {
-//             responseData += chunk;
-//           });
-
-//           res.on('end', () => {
-//             if (res.statusCode >= 200 && res.statusCode < 300) {
-//               try {
-//                 const parsedData = JSON.parse(responseData);
-//                 resolve(parsedData);
-//               } catch (e) {
-//                 resolve(responseData);
-//               }
-//             } else {
-//               reject(new Error(`HTTP Error ${res.statusCode}: ${responseData}`));
-//             }
-//           });
-//         });
-
-//         req.on('error', (error) => {
-//           reject(error);
-//         });
-
-//         if (data) {
-//           req.write(JSON.stringify(data));
-//         }
-
-//         req.end();
-//       });
-//     } catch (error) {
-//       console.error('Firebase API request failed:', error);
-//       throw error;
-//     }
-//   },
-
-//   // Create a document in a collection
-//   async addDocument(collection, data) {
-//     try {
-//       // Convert JavaScript object to Firestore document
-//       const firestoreData = {
-//         fields: this._objectToFirestore(data)
-//       };
-
-//       const response = await this.makeRequest('POST', `/${collection}`, firestoreData);
-
-//       // Extract the document ID from the name field
-//       const nameParts = response.name.split('/');
-//       const docId = nameParts[nameParts.length - 1];
-
-//       return {
-//         id: docId,
-//         ...data
-//       };
-//     } catch (error) {
-//       console.error(`Error adding document to ${collection}:`, error);
-//       throw error;
-//     }
-//   },
-
-//   // Get a document by ID
-//   async getDocument(collection, docId) {
-//     try {
-//       const response = await this.makeRequest('GET', `/${collection}/${docId}`);
-//       return {
-//         id: docId,
-//         ...this._firestoreToObject(response.fields)
-//       };
-//     } catch (error) {
-//       console.error(`Error getting document ${docId} from ${collection}:`, error);
-//       throw error;
-//     }
-//   },
-
-//   // Set a document with a known ID
-//   async setDocument(collection, docId, data) {
-//     try {
-//       const firestoreData = {
-//         fields: this._objectToFirestore(data)
-//       };
-
-//       await this.makeRequest('PATCH', `/${collection}/${docId}`, firestoreData);
-
-//       return {
-//         id: docId,
-//         ...data
-//       };
-//     } catch (error) {
-//       console.error(`Error setting document ${docId} in ${collection}:`, error);
-//       throw error;
-//     }
-//   },
-
-//   // Update specific fields in a document
-//   async updateDocument(collection, docId, data) {
-//     try {
-//       // Get current document
-//       const currentDoc = await this.getDocument(collection, docId);
-
-//       // Merge with new data
-//       const updatedDoc = {
-//         ...currentDoc,
-//         ...data,
-//         id: currentDoc.id // Ensure ID isn't overwritten
-//       };
-
-//       // Set the merged document
-//       return await this.setDocument(collection, docId, updatedDoc);
-//     } catch (error) {
-//       console.error(`Error updating document ${docId} in ${collection}:`, error);
-//       throw error;
-//     }
-//   },
-
-//   // Delete a document
-//   async deleteDocument(collection, docId) {
-//     try {
-//       await this.makeRequest('DELETE', `/${collection}/${docId}`);
-//       return true;
-//     } catch (error) {
-//       console.error(`Error deleting document ${docId} from ${collection}:`, error);
-//       throw error;
-//     }
-//   },
-
-//   // Helper to convert JavaScript objects to Firestore format
-//   _objectToFirestore(obj) {
-//     const result = {};
-
-//     for (const [key, value] of Object.entries(obj)) {
-//       if (value === null || value === undefined) {
-//         result[key] = { nullValue: null };
-//       } else if (typeof value === 'string') {
-//         result[key] = { stringValue: value };
-//       } else if (typeof value === 'number') {
-//         result[key] = { doubleValue: value };
-//       } else if (typeof value === 'boolean') {
-//         result[key] = { booleanValue: value };
-//       } else if (value instanceof Date) {
-//         result[key] = { timestampValue: value.toISOString() };
-//       } else if (Array.isArray(value)) {
-//         result[key] = {
-//           arrayValue: {
-//             values: value.map(item => this._objectToFirestore({ item }).item)
-//           }
-//         };
-//       } else if (typeof value === 'object') {
-//         result[key] = {
-//           mapValue: {
-//             fields: this._objectToFirestore(value)
-//           }
-//         };
-//       }
-//     }
-
-//     return result;
-//   },
-
-//   // Helper to convert Firestore format back to JavaScript objects
-//   _firestoreToObject(firestoreObj) {
-//     const result = {};
-
-//     for (const [key, value] of Object.entries(firestoreObj)) {
-//       if (value.nullValue !== undefined) {
-//         result[key] = null;
-//       } else if (value.stringValue !== undefined) {
-//         result[key] = value.stringValue;
-//       } else if (value.doubleValue !== undefined) {
-//         result[key] = value.doubleValue;
-//       } else if (value.integerValue !== undefined) {
-//         result[key] = parseInt(value.integerValue, 10);
-//       } else if (value.booleanValue !== undefined) {
-//         result[key] = value.booleanValue;
-//       } else if (value.timestampValue !== undefined) {
-//         result[key] = new Date(value.timestampValue);
-//       } else if (value.arrayValue !== undefined) {
-//         result[key] = value.arrayValue.values
-//           ? value.arrayValue.values.map(item => this._firestoreToObject({ item }).item)
-//           : [];
-//       } else if (value.mapValue !== undefined) {
-//         result[key] = this._firestoreToObject(value.mapValue.fields || {});
-//       }
-//     }
-
-//     return result;
-//   },
-
-//   // Test function to verify connection
-//   async testConnection() {
-//     try {
-//       const testData = {
-//         message: 'Test connection',
-//         timestamp: new Date().toISOString()
-//       };
-
-//       // Create test document
-//       const docData = await this.addDocument('test', testData);
-//       console.log('Test document created:', docData.id);
-
-//       // Get the document
-//       const retrievedDoc = await this.getDocument('test', docData.id);
-//       console.log('Test document retrieved');
-
-//       // Delete the document
-//       await this.deleteDocument('test', docData.id);
-//       console.log('Test document deleted');
-
-//       firebaseConnected = true;
-//       return true;
-//     } catch (error) {
-//       console.error('Firebase connection test failed:', error);
-//       firebaseConnected = false;
-//       return false;
-//     }
-//   }
-// };
-
-// // Check Firebase connection at startup
-// (async () => {
-//   try {
-//     if (process.env.FIREBASE_PROJECT_ID &&
-//         process.env.FIREBASE_CLIENT_EMAIL &&
-//         process.env.FIREBASE_PRIVATE_KEY) {
-//       console.log('Testing Firebase connection...');
-//       await firebase.testConnection();
-//       console.log('Firebase connection test result:', firebaseConnected);
-//     } else {
-//       console.log('Firebase environment variables missing, skipping connection test');
-//     }
-//   } catch (error) {
-//     console.error('Firebase initialization error:', error);
-//   }
-// })();
-
-// // Home page route
-// app.get('/', (req, res) => {
-//   res.send(`
-//     <html>
-//       <head>
-//         <title>School Manager API</title>
-//         <style>
-//           body {
-//             font-family: Arial, sans-serif;
-//             max-width: 800px;
-//             margin: 0 auto;
-//             padding: 20px;
-//             line-height: 1.6;
-//           }
-//           h1 { color: #3490dc; }
-//           h2 { color: #2779bd; margin-top: 30px; }
-//           code {
-//             background: #f8f9fa;
-//             padding: 2px 5px;
-//             border-radius: 3px;
-//           }
-//           .endpoint {
-//             background: #f1f5f8;
-//             border-left: 4px solid #3490dc;
-//             padding: 10px 15px;
-//             margin: 10px 0;
-//           }
-//         </style>
-//       </head>
-//       <body>
-//         <h1>School Manager API Server</h1>
-//         <p>The API server is running correctly. Below are some test endpoints you can use to verify functionality:</p>
-
-//         <h2>Test Endpoints</h2>
-//         <div class="endpoint">
-//           <code>GET /api/health</code> - Health check endpoint
-//         </div>
-//         <div class="endpoint">
-//           <code>GET /api/info</code> - Server information
-//         </div>
-//         <div class="endpoint">
-//           <code>GET /api/firebase-debug</code> - Firebase connection debug info
-//         </div>
-//         <div class="endpoint">
-//           <code>GET /api/create-test-notification</code> - Create a test notification
-//         </div>
-//       </body>
-//     </html>
-//   `);
-// });
-
-// // Health check endpoint
-// app.get('/api/health', (req, res) => {
-//   res.status(200).json({
-//     status: 'UP',
-//     timestamp: new Date(),
-//     uptime: process.uptime()
-//   });
-// });
-
-// // Server info endpoint
-// app.get('/api/info', async (req, res) => {
-//   let testFirebaseConnected = false;
-
-//   try {
-//     testFirebaseConnected = await firebase.testConnection();
-//   } catch (error) {
-//     console.error('Firebase connection check failed:', error);
-//   }
-
-//   res.status(200).json({
-//     serverName: 'School Manager API',
-//     version: '1.0.0',
-//     nodeVersion: process.version,
-//     environment: process.env.NODE_ENV || 'development',
-//     firebase: {
-//       connected: testFirebaseConnected,
-//       initializedStatus: firebaseConnected,
-//       projectId: projectId,
-//       implementation: 'REST API' // Using REST API instead of Admin SDK
-//     },
-//     endpoints: {
-//       health: '/api/health',
-//       info: '/api/info',
-//       notifications: '/api/notifications',
-//       courseSchedule: '/api/courses/:courseId/schedule',
-//       courseSessions: '/api/courses/:courseId/sessions'
-//     }
-//   });
-// });
-
-// // Firebase debug endpoint
-// app.get('/api/firebase-debug', (req, res) => {
-//   const envVars = {
-//     projectIdExists: !!process.env.FIREBASE_PROJECT_ID,
-//     clientEmailExists: !!process.env.FIREBASE_CLIENT_EMAIL,
-//     privateKeyExists: !!process.env.FIREBASE_PRIVATE_KEY,
-//     projectId: process.env.FIREBASE_PROJECT_ID || 'not available',
-//     clientEmailPrefix: process.env.FIREBASE_CLIENT_EMAIL ?
-//       process.env.FIREBASE_CLIENT_EMAIL.substring(0, 10) + '...' : 'not available',
-//     privateKeyLength: process.env.FIREBASE_PRIVATE_KEY ?
-//       process.env.FIREBASE_PRIVATE_KEY.length : 'not available',
-//     nodeEnv: process.env.NODE_ENV || 'not set',
-//     vercelEnv: process.env.VERCEL_ENV || 'not in vercel'
-//   };
-
-//   res.status(200).json({
-//     firebaseInitialized: firebaseConnected,
-//     implementation: 'REST API',
-//     environmentVariables: envVars,
-//     timestamp: new Date()
-//   });
-// });
-
-// // Test Firebase connection
-// app.get('/api/firebase-test', async (req, res) => {
-//   try {
-//     console.log('Testing Firebase connection with REST API...');
-
-//     const results = {
-//       implementation: 'REST API',
-//       connected: firebaseConnected,
-//       tests: {
-//         write: { attempted: false, success: false, error: null },
-//         read: { attempted: false, success: false, error: null },
-//         delete: { attempted: false, success: false, error: null }
-//       },
-//       timeStamp: new Date().toISOString()
-//     };
-
-//     try {
-//       // Test document write
-//       results.tests.write.attempted = true;
-//       const testDoc = {
-//         message: 'Test document',
-//         timestamp: new Date().toISOString()
-//       };
-//       const docData = await firebase.addDocument('debug_tests', testDoc);
-//       results.tests.write.success = true;
-
-//       // Test document read
-//       results.tests.read.attempted = true;
-//       const retrievedDoc = await firebase.getDocument('debug_tests', docData.id);
-//       results.tests.read.success = true;
-
-//       // Test document delete
-//       results.tests.delete.attempted = true;
-//       await firebase.deleteDocument('debug_tests', docData.id);
-//       results.tests.delete.success = true;
-//     } catch (error) {
-//       console.error('Firebase test operations failed:', error);
-//       if (!results.tests.write.success) {
-//         results.tests.write.error = error.message;
-//       } else if (!results.tests.read.success) {
-//         results.tests.read.error = error.message;
-//       } else if (!results.tests.delete.success) {
-//         results.tests.delete.error = error.message;
-//       }
-//     }
-
-//     res.status(200).json(results);
-//   } catch (error) {
-//     res.status(500).json({
-//       error: 'Firebase test failed',
-//       message: error.message
-//     });
-//   }
-// });
-
-// // Create test notification endpoint
-// app.get('/api/create-test-notification', async (req, res) => {
-//   try {
-//     console.log('Starting test notification creation with REST API...');
-
-//     const notification = {
-//       courseId: 'test-course-123',
-//       courseName: 'Test Course',
-//       type: 'schedule_needed',
-//       message: 'This course needs a schedule',
-//       createdAt: new Date().toISOString(),
-//       read: false
-//     };
-
-//     console.log('Notification object created:', notification);
-
-//     // Test add document
-//     const docData = await firebase.addDocument('courseNotifications', notification);
-//     console.log('Test notification created with ID:', docData.id);
-
-//     res.status(201).json({
-//       success: true,
-//       notificationId: docData.id,
-//       message: 'Test notification created'
-//     });
-//   } catch (error) {
-//     console.error('Error creating test notification:', error);
-//     res.status(500).json({
-//       error: 'Failed to create test notification',
-//       details: error.message
-//     });
-//   }
-// });
-
-// // Node.js and environment test endpoint
-// app.get('/api/environment', (req, res) => {
-//   try {
-//     const envInfo = {
-//       node: {
-//         version: process.version,
-//         versions: process.versions,
-//         platform: process.platform,
-//         arch: process.arch,
-//         env: process.env.NODE_ENV
-//       },
-//       vercel: {
-//         environment: process.env.VERCEL_ENV || 'not set',
-//         region: process.env.VERCEL_REGION || 'not set',
-//         url: process.env.VERCEL_URL || 'not set'
-//       },
-//       memory: {
-//         rss: `${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`,
-//         heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)} MB`,
-//         heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`
-//       },
-//       uptime: `${Math.round(process.uptime())} seconds`
-//     };
-
-//     res.status(200).json(envInfo);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
-// // Export for Vercel
-// module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// server.js - updated with simplified API client
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const https = require('https');
 const crypto = require('crypto');
 
-// Create Express app
 const app = express();
 
-// Set up middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use((req, res, next) => {
@@ -615,7 +37,6 @@ const simplifiedFirebase = {
 
         const firestoreData = this._convertToFirestoreFields(data);
 
-        // Create request options
         const options = {
           hostname: 'firestore.googleapis.com',
           path,
@@ -626,7 +47,6 @@ const simplifiedFirebase = {
           }
         };
 
-        // Create request
         const req = https.request(options, (res) => {
           let responseData = '';
 
@@ -639,7 +59,6 @@ const simplifiedFirebase = {
               try {
                 const result = JSON.parse(responseData);
 
-                // Return document with ID
                 resolve({
                   id: docId,
                   ...data
@@ -657,7 +76,6 @@ const simplifiedFirebase = {
           reject(error);
         });
 
-        // Send data
         req.write(JSON.stringify({ fields: firestoreData }));
         req.end();
       });
@@ -667,7 +85,6 @@ const simplifiedFirebase = {
     }
   },
 
-  // Helper to convert JavaScript objects to Firestore format
   _convertToFirestoreFields(data) {
     const fields = {};
 
@@ -678,7 +95,6 @@ const simplifiedFirebase = {
     return fields;
   },
 
-  // Convert a single value to Firestore format
   _convertValueToFirestore(value) {
     if (value === null || value === undefined) {
       return { nullValue: null };
@@ -711,11 +127,9 @@ const simplifiedFirebase = {
       };
     }
 
-    // Default fallback
     return { stringValue: String(value) };
   },
 
-  // Test to see if we can connect to Firestore
   async testConnection() {
     try {
       const testData = {
@@ -723,7 +137,6 @@ const simplifiedFirebase = {
         timestamp: new Date().toISOString()
       };
 
-      // Try to create a test document
       const testDoc = await this.addDocument('test_connections', testData);
       console.log('Firebase test document created with ID:', testDoc.id);
 
@@ -734,12 +147,258 @@ const simplifiedFirebase = {
       firebaseConnected = false;
       return false;
     }
+  },
+
+  async getDocumentsWhere(collection, field, operator, value) {
+    try {
+      const projectId = process.env.FIREBASE_PROJECT_ID;
+      let url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
+
+      return new Promise((resolve, reject) => {
+        const options = {
+          hostname: 'firestore.googleapis.com',
+          path: `/v1/projects/${projectId}/databases/(default)/documents/${collection}`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Firebase-Client': 'rest-api'
+          }
+        };
+
+        const req = https.request(options, (res) => {
+          let responseData = '';
+
+          res.on('data', (chunk) => {
+            responseData += chunk;
+          });
+
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const result = JSON.parse(responseData);
+
+                if (!result.documents) {
+                  return resolve([]);
+                }
+
+                const filteredDocs = result.documents.filter(doc => {
+                  const fieldValue = this._extractFieldValue(doc.fields, field);
+
+                  switch(operator) {
+                    case '==': return fieldValue === value;
+                    case '!=': return fieldValue !== value;
+                    case '>': return fieldValue > value;
+                    case '>=': return fieldValue >= value;
+                    case '<': return fieldValue < value;
+                    case '<=': return fieldValue <= value;
+                    default: return false;
+                  }
+                });
+
+                const documents = filteredDocs.map(doc => {
+                  const nameParts = doc.name.split('/');
+                  const id = nameParts[nameParts.length - 1];
+
+                  const data = this._firestoreToObject(doc.fields);
+
+                  return {
+                    id,
+                    ...data
+                  };
+                });
+
+                resolve(documents);
+              } catch (e) {
+                reject(new Error(`Failed to parse response: ${e.message}`));
+              }
+            } else {
+              reject(new Error(`HTTP Error ${res.statusCode}: ${responseData}`));
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          reject(error);
+        });
+
+        req.end();
+      });
+    } catch (error) {
+      console.error(`Error querying ${collection} where ${field} ${operator} ${value}:`, error);
+      throw error;
+    }
+  },
+
+  _extractFieldValue(fields, fieldPath) {
+    const parts = fieldPath.split('.');
+    let current = fields;
+
+    for (const part of parts) {
+      if (!current || !current[part]) return undefined;
+      current = current[part];
+    }
+
+    if (current.booleanValue !== undefined) return current.booleanValue;
+    if (current.stringValue !== undefined) return current.stringValue;
+    if (current.integerValue !== undefined) return parseInt(current.integerValue, 10);
+    if (current.doubleValue !== undefined) return current.doubleValue;
+    if (current.nullValue !== undefined) return null;
+
+    return undefined;
+  },
+
+  _firestoreToObject(firestoreObj) {
+    const result = {};
+
+    for (const [key, value] of Object.entries(firestoreObj)) {
+      if (value.nullValue !== undefined) {
+        result[key] = null;
+      } else if (value.stringValue !== undefined) {
+        result[key] = value.stringValue;
+      } else if (value.doubleValue !== undefined) {
+        result[key] = value.doubleValue;
+      } else if (value.integerValue !== undefined) {
+        result[key] = parseInt(value.integerValue, 10);
+      } else if (value.booleanValue !== undefined) {
+        result[key] = value.booleanValue;
+      } else if (value.timestampValue !== undefined) {
+        result[key] = new Date(value.timestampValue);
+      } else if (value.arrayValue !== undefined) {
+        result[key] = value.arrayValue.values
+          ? value.arrayValue.values.map(item => this._firestoreToObject({ item }).item)
+          : [];
+      } else if (value.mapValue !== undefined) {
+        result[key] = this._firestoreToObject(value.mapValue.fields || {});
+      }
+    }
+
+    return result;
+  },
+
+  async updateField(collection, docId, field, value) {
+    try {
+      const projectId = process.env.FIREBASE_PROJECT_ID;
+
+      return new Promise((resolve, reject) => {
+        const getOptions = {
+          hostname: 'firestore.googleapis.com',
+          path: `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Firebase-Client': 'rest-api'
+          }
+        };
+
+        const getReq = https.request(getOptions, (getRes) => {
+          let responseData = '';
+
+          getRes.on('data', (chunk) => {
+            responseData += chunk;
+          });
+
+          getRes.on('end', () => {
+            if (getRes.statusCode >= 200 && getRes.statusCode < 300) {
+              try {
+                const document = JSON.parse(responseData);
+
+                const fields = document.fields || {};
+
+                const fieldParts = field.split('.');
+                let current = fields;
+
+                for (let i = 0; i < fieldParts.length - 1; i++) {
+                  const part = fieldParts[i];
+                  if (!current[part] || !current[part].mapValue || !current[part].mapValue.fields) {
+                    current[part] = {
+                      mapValue: {
+                        fields: {}
+                      }
+                    };
+                  }
+                  current = current[part].mapValue.fields;
+                }
+
+                const lastPart = fieldParts[fieldParts.length - 1];
+
+                if (typeof value === 'boolean') {
+                  current[lastPart] = { booleanValue: value };
+                } else if (typeof value === 'string') {
+                  current[lastPart] = { stringValue: value };
+                } else if (typeof value === 'number') {
+                  if (Number.isInteger(value)) {
+                    current[lastPart] = { integerValue: value.toString() };
+                  } else {
+                    current[lastPart] = { doubleValue: value };
+                  }
+                } else if (value === null) {
+                  current[lastPart] = { nullValue: null };
+                }
+
+                const updateOptions = {
+                  hostname: 'firestore.googleapis.com',
+                  path: `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}?updateMask.fieldPaths=${field}`,
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Firebase-Client': 'rest-api'
+                  }
+                };
+
+                const updateReq = https.request(updateOptions, (updateRes) => {
+                  let updateResponseData = '';
+
+                  updateRes.on('data', (chunk) => {
+                    updateResponseData += chunk;
+                  });
+
+                  updateRes.on('end', () => {
+                    if (updateRes.statusCode >= 200 && updateRes.statusCode < 300) {
+                      try {
+                        const result = JSON.parse(updateResponseData);
+                        resolve({
+                          id: docId,
+                          [field]: value,
+                          success: true
+                        });
+                      } catch (e) {
+                        reject(new Error(`Failed to parse update response: ${e.message}`));
+                      }
+                    } else {
+                      reject(new Error(`HTTP Error during update ${updateRes.statusCode}: ${updateResponseData}`));
+                    }
+                  });
+                });
+
+                updateReq.on('error', (error) => {
+                  reject(error);
+                });
+
+                updateReq.write(JSON.stringify({ fields }));
+                updateReq.end();
+
+              } catch (e) {
+                reject(new Error(`Failed to parse get response: ${e.message}`));
+              }
+            } else {
+              reject(new Error(`HTTP Error during get ${getRes.statusCode}: ${responseData}`));
+            }
+          });
+        });
+
+        getReq.on('error', (error) => {
+          reject(error);
+        });
+
+        getReq.end();
+      });
+    } catch (error) {
+      console.error(`Error updating field ${field} in document ${docId} (${collection}):`, error);
+      throw error;
+    }
   }
 };
 
-// Routes
-
-// Home page route
 app.get('/', (req, res) => {
   res.send(`
     <html>
@@ -790,7 +449,6 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'UP',
@@ -799,7 +457,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Server info endpoint
 app.get('/api/info', async (req, res) => {
   let testFirebaseConnected = false;
 
@@ -827,7 +484,6 @@ app.get('/api/info', async (req, res) => {
   });
 });
 
-// Debug endpoint
 app.get('/api/firebase-debug', (req, res) => {
   const envVars = {
     projectIdExists: !!process.env.FIREBASE_PROJECT_ID,
@@ -850,12 +506,10 @@ app.get('/api/firebase-debug', (req, res) => {
   });
 });
 
-// Create test notification endpoint
 app.get('/api/create-test-notification', async (req, res) => {
   try {
     console.log('Creating test notification...');
 
-    // Create notification data
     const notification = {
       courseId: 'test-course-123',
       courseName: 'Test Course',
@@ -865,7 +519,6 @@ app.get('/api/create-test-notification', async (req, res) => {
       read: false
     };
 
-    // Add to Firestore
     const result = await simplifiedFirebase.addDocument('courseNotifications', notification);
 
     console.log('Test notification created with ID:', result.id);
@@ -884,13 +537,10 @@ app.get('/api/create-test-notification', async (req, res) => {
   }
 });
 
-// Debug private key endpoint
 app.get('/api/debug-private-key', (req, res) => {
   try {
-    // Get the private key from environment variables
     let privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
 
-    // Information about the private key
     const info = {
       length: privateKey.length,
       hasQuotes: privateKey.startsWith('"') && privateKey.endsWith('"'),
@@ -902,7 +552,6 @@ app.get('/api/debug-private-key', (req, res) => {
       lastChars: '...' + privateKey.substring(privateKey.length - 15)
     };
 
-    // Try to clean the key for display (for safety, only show info about the key)
     if (info.hasQuotes) {
       privateKey = privateKey.slice(1, -1);
       info.lengthAfterRemovingQuotes = privateKey.length;
@@ -928,7 +577,6 @@ app.get('/api/debug-private-key', (req, res) => {
   }
 });
 
-// Environment information endpoint
 app.get('/api/environment', (req, res) => {
   try {
     const envInfo = {
@@ -957,23 +605,33 @@ app.get('/api/environment', (req, res) => {
   }
 });
 
-// Update to the existing server.js file
+app.get('/api/get-pending', async (req, res) => {
+  try {
+    console.log('Fetching courses with pendingSchedule=true');
 
-// Import the necessary Firebase functions
-// Note: This needs to be adapted to match your actual Firebase setup
+    const pendingCourses = await simplifiedFirebase.getDocumentsWhere('courses', 'pendingSchedule', '==', true);
 
-// Add these API endpoints to the server.js file, before the export statement
+    console.log(`Found ${pendingCourses.length} pending courses`);
 
-// Implementation of Firebase database operations for scheduling
+    res.status(200).json({
+      success: true,
+      courses: pendingCourses
+    });
+  } catch (error) {
+    console.error('Error fetching pending courses:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch pending courses',
+      details: error.message
+    });
+  }
+});
+
+
 const scheduleOperations = {
-  // Mark a course as needing scheduling
   markCourseForScheduling: async (courseId) => {
     try {
-      // Simplified implementation - update in your actual Firebase schema
       console.log(`Marking course ${courseId} for scheduling`);
-      // Example implementation using Firebase:
-      // const courseRef = doc(firestore, `courses/${courseId}`);
-      // await updateDoc(courseRef, { pendingSchedule: true });
       return true;
     } catch (error) {
       console.error('Error marking course for scheduling:', error);
@@ -981,16 +639,9 @@ const scheduleOperations = {
     }
   },
 
-  // Submit a schedule for a course
   submitSchedule: async (courseId, sessions) => {
     try {
       console.log(`Submitting schedule for course ${courseId} with ${sessions.length} sessions`);
-      // Example implementation using Firebase:
-      // const courseRef = doc(firestore, `courses/${courseId}`);
-      // await updateDoc(courseRef, {
-      //   sessions,
-      //   pendingSchedule: false
-      // });
       return true;
     } catch (error) {
       console.error('Error submitting course schedule:', error);
@@ -998,21 +649,9 @@ const scheduleOperations = {
     }
   },
 
-  // Get courses pending scheduling
   getPendingCourses: async () => {
     try {
       console.log('Fetching courses pending scheduling');
-      // Example implementation using Firebase:
-      // const coursesRef = collection(firestore, 'courses');
-      // const q = query(coursesRef, where('pendingSchedule', '==', true));
-      // const snapshot = await getDocs(q);
-      // const pendingCourses = [];
-      // snapshot.forEach(doc => {
-      //   pendingCourses.push({ id: doc.id, ...doc.data() });
-      // });
-      // return pendingCourses;
-
-      // Simplified mock data
       return [
         {
           id: 'course-123',
@@ -1029,45 +668,9 @@ const scheduleOperations = {
     }
   },
 
-  // Check for scheduling conflicts
   checkConflicts: async (sessions) => {
     try {
       console.log(`Checking conflicts for ${sessions.length} sessions`);
-      // Example implementation using Firebase:
-      // const conflicts = [];
-      // for (const newSession of sessions) {
-      //   const sessionsRef = collection(firestore, 'sessions');
-      //   const sessionDate = new Date(newSession.date);
-      //
-      //   // Query all sessions on the same day
-      //   const startOfDay = new Date(sessionDate);
-      //   startOfDay.setHours(0, 0, 0, 0);
-      //
-      //   const endOfDay = new Date(sessionDate);
-      //   endOfDay.setHours(23, 59, 59, 999);
-      //
-      //   const q = query(sessionsRef,
-      //     where('date', '>=', startOfDay),
-      //     where('date', '<=', endOfDay)
-      //   );
-      //
-      //   const snapshot = await getDocs(q);
-      //
-      //   // Check each session for time overlap
-      //   snapshot.forEach(doc => {
-      //     const existingSession = doc.data();
-      //     if (hasTimeOverlap(newSession, existingSession)) {
-      //       conflicts.push({
-      //         id: doc.id,
-      //         ...existingSession,
-      //         courseName: existingSession.courseName || 'Unknown Course'
-      //       });
-      //     }
-      //   });
-      // }
-      // return conflicts;
-
-      // Simplified mock implementation
       return [];
     } catch (error) {
       console.error('Error checking for conflicts:', error);
@@ -1076,9 +679,7 @@ const scheduleOperations = {
   }
 };
 
-// Helper function to check for time overlap
 function hasTimeOverlap(session1, session2) {
-  // Convert time strings to minutes for easier comparison
   const timeToMinutes = (timeStr) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
@@ -1089,15 +690,11 @@ function hasTimeOverlap(session1, session2) {
   const start2 = timeToMinutes(session2.startTime);
   const end2 = timeToMinutes(session2.endTime);
 
-  // Check for overlap
   return (start1 < end2 && end1 > start2);
 }
 
-// Add the API endpoints
-// Get pending courses that need scheduling
 app.get('/api/pending-schedule', async (req, res) => {
   try {
-    // In a production environment, authenticate the request here
     const pendingCourses = await scheduleOperations.getPendingCourses();
     res.status(200).json(pendingCourses);
   } catch (error) {
@@ -1106,10 +703,8 @@ app.get('/api/pending-schedule', async (req, res) => {
   }
 });
 
-// Mark a course as needing scheduling
 app.post('/api/pending-schedule', async (req, res) => {
   try {
-    // In a production environment, authenticate the request here
     const { courseId } = req.body;
 
     if (!courseId) {
@@ -1124,10 +719,8 @@ app.post('/api/pending-schedule', async (req, res) => {
   }
 });
 
-// Submit a schedule for a course
 app.post('/api/submit-schedule', async (req, res) => {
   try {
-    // In a production environment, authenticate the request here
     const { courseId, sessions } = req.body;
 
     if (!courseId || !sessions) {
@@ -1146,10 +739,8 @@ app.post('/api/submit-schedule', async (req, res) => {
   }
 });
 
-// Check for scheduling conflicts
 app.post('/api/check-conflicts', async (req, res) => {
   try {
-    // In a production environment, authenticate the request here
     const { sessions } = req.body;
 
     if (!sessions || !Array.isArray(sessions)) {
@@ -1164,5 +755,74 @@ app.post('/api/check-conflicts', async (req, res) => {
   }
 });
 
-// Export for Vercel
+app.post('/api/mark-course-pending', async (req, res) => {
+  try {
+    console.log('Received request to mark course as pending scheduling');
+
+    const { courseId } = req.body;
+
+    if (!courseId) {
+      console.log('Missing courseId in request');
+      return res.status(400).json({
+        success: false,
+        error: 'Missing courseId in request'
+      });
+    }
+
+    console.log(`Marking course ${courseId} as pending scheduling`);
+
+    const result = await simplifiedFirebase.updateField('courses', courseId, 'pendingSchedule', true);
+
+    console.log(`Successfully marked course ${courseId} as pending scheduling`);
+
+    res.status(200).json({
+      success: true,
+      message: `Course ${courseId} has been marked as pending scheduling`,
+      courseId
+    });
+  } catch (error) {
+    console.error('Error marking course as pending:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark course as pending scheduling',
+      details: error.message
+    });
+  }
+});
+
+app.get('/api/mark-course-pending/:courseId', async (req, res) => {
+  try {
+    console.log('Received GET request to mark course as pending scheduling');
+
+    const { courseId } = req.params;
+
+    if (!courseId) {
+      console.log('Missing courseId in request');
+      return res.status(400).json({
+        success: false,
+        error: 'Missing courseId in request'
+      });
+    }
+
+    console.log(`Marking course ${courseId} as pending scheduling`);
+
+    const result = await simplifiedFirebase.updateField('courses', courseId, 'pendingSchedule', true);
+
+    console.log(`Successfully marked course ${courseId} as pending scheduling`);
+
+    res.status(200).json({
+      success: true,
+      message: `Course ${courseId} has been marked as pending scheduling`,
+      courseId
+    });
+  } catch (error) {
+    console.error('Error marking course as pending:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark course as pending scheduling',
+      details: error.message
+    });
+  }
+});
+
 module.exports = app;
