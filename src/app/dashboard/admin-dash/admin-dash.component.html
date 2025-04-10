@@ -219,6 +219,12 @@
                 >
                   🧑🏽‍🎓
                 </button>
+                <button
+                  (click)="scheduleCourse(course.id!)"
+                  class="text-blue-600 hover:text-blue-800 transition"
+                  title="Schedule course sessions">
+                  ✒️
+                </button>
 
                 @if (course.sessions && course.sessions.length > 0) {
                   <details class="relative">

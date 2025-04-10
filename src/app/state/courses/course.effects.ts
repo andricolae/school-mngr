@@ -167,4 +167,40 @@ export class CoursesEffects {
       )
     )
   );
+
+  // Add the following effects to the existing CoursesEffects class in school-mngr
+
+// Inside the CoursesEffects class after the existing effects
+
+// Effect for marking a course for scheduling
+markCourseForScheduling$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(CourseActions.markCourseForScheduling),
+    mergeMap(({ courseId }) =>
+      this.courseService.markCourseForScheduling(courseId).pipe(
+        map(() => {
+          NotificationComponent.show('success', 'Course has been sent for scheduling');
+          return CourseActions.markCourseForSchedulingSuccess({ courseId });
+        }),
+        catchError((error) => {
+          NotificationComponent.show('alert', `Failed to schedule course: ${error.message}`);
+          return of(CourseActions.markCourseForSchedulingFail({ error: error.message }));
+        })
+      )
+    )
+  )
+);
+
+// Effect for checking if a course's schedule has been updated
+checkScheduleStatus$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(CourseActions.checkScheduleStatus),
+    mergeMap(({ courseId }) =>
+      this.courseService.checkScheduleStatus(courseId).pipe(
+        map((isScheduled) => CourseActions.checkScheduleStatusSuccess({ courseId, isScheduled })),
+        catchError((error) => of(CourseActions.checkScheduleStatusFail({ error: error.message })))
+      )
+    )
+  )
+);
 }

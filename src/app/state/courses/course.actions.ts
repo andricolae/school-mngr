@@ -144,3 +144,33 @@ export const updateStudentAttendanceFail = createAction(
   '[Courses] Update Student Attendance Fail',
   props<{ error: string }>()
 );
+
+export const markCourseForScheduling = createAction(
+  '[Courses] Mark Course For Scheduling',
+  props<{ courseId: string }>()
+);
+
+export const markCourseForSchedulingSuccess = createAction(
+  '[Courses] Mark Course For Scheduling Success',
+  props<{ courseId: string }>()
+);
+
+export const markCourseForSchedulingFail = createAction(
+  '[Courses] Mark Course For Scheduling Fail',
+  props<{ error: string }>()
+);
+
+export const checkScheduleStatus = createAction(
+  '[Courses] Check Schedule Status',
+  props<{ courseId: string }>()
+);
+
+export const checkScheduleStatusSuccess = createAction(
+  '[Courses] Check Schedule Status Success',
+  props<{ courseId: string, isScheduled: boolean }>()
+);
+
+export const checkScheduleStatusFail = createAction(
+  '[Courses] Check Schedule Status Fail',
+  props<{ error: string }>()
+);
