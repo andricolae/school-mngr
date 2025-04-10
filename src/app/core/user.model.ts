@@ -36,6 +36,7 @@ export interface Course {
       [sessionId: string]: boolean
     }
   };
+  pendingSchedule?: boolean;
 }
 
 export interface CourseSession {

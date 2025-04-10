@@ -591,17 +591,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Firebase connection state
 let firebaseConnected = false;
 let projectId = process.env.FIREBASE_PROJECT_ID || 'not connected';
 
-// Simplified Firebase client using API key
-// This approach avoids JWT token issues but requires API key and adjusted security rules
 const simplifiedFirebase = {
-  // Create a document in a collection
   async addDocument(collection, data) {
     try {
-      // Generate a unique ID if not provided
       const docId = crypto.randomUUID();
 
       return await this.setDocument(collection, docId, data);
@@ -611,16 +606,13 @@ const simplifiedFirebase = {
     }
   },
 
-  // Set a document with a specific ID
   async setDocument(collection, docId, data) {
     try {
       return new Promise((resolve, reject) => {
         const projectId = process.env.FIREBASE_PROJECT_ID;
 
-        // Firestore API endpoint
         const path = `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`;
 
-        // Convert data to Firestore format
         const firestoreData = this._convertToFirestoreFields(data);
 
         // Create request options
@@ -631,7 +623,6 @@ const simplifiedFirebase = {
           headers: {
             'Content-Type': 'application/json',
             'X-Firebase-Client': 'rest-api',
-            // No Authorization header - using public API with security rules
           }
         };
 
@@ -963,6 +954,213 @@ app.get('/api/environment', (req, res) => {
     res.status(200).json(envInfo);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Update to the existing server.js file
+
+// Import the necessary Firebase functions
+// Note: This needs to be adapted to match your actual Firebase setup
+
+// Add these API endpoints to the server.js file, before the export statement
+
+// Implementation of Firebase database operations for scheduling
+const scheduleOperations = {
+  // Mark a course as needing scheduling
+  markCourseForScheduling: async (courseId) => {
+    try {
+      // Simplified implementation - update in your actual Firebase schema
+      console.log(`Marking course ${courseId} for scheduling`);
+      // Example implementation using Firebase:
+      // const courseRef = doc(firestore, `courses/${courseId}`);
+      // await updateDoc(courseRef, { pendingSchedule: true });
+      return true;
+    } catch (error) {
+      console.error('Error marking course for scheduling:', error);
+      throw error;
+    }
+  },
+
+  // Submit a schedule for a course
+  submitSchedule: async (courseId, sessions) => {
+    try {
+      console.log(`Submitting schedule for course ${courseId} with ${sessions.length} sessions`);
+      // Example implementation using Firebase:
+      // const courseRef = doc(firestore, `courses/${courseId}`);
+      // await updateDoc(courseRef, {
+      //   sessions,
+      //   pendingSchedule: false
+      // });
+      return true;
+    } catch (error) {
+      console.error('Error submitting course schedule:', error);
+      throw error;
+    }
+  },
+
+  // Get courses pending scheduling
+  getPendingCourses: async () => {
+    try {
+      console.log('Fetching courses pending scheduling');
+      // Example implementation using Firebase:
+      // const coursesRef = collection(firestore, 'courses');
+      // const q = query(coursesRef, where('pendingSchedule', '==', true));
+      // const snapshot = await getDocs(q);
+      // const pendingCourses = [];
+      // snapshot.forEach(doc => {
+      //   pendingCourses.push({ id: doc.id, ...doc.data() });
+      // });
+      // return pendingCourses;
+
+      // Simplified mock data
+      return [
+        {
+          id: 'course-123',
+          name: 'Introduction to Programming',
+          teacher: 'John Smith',
+          teacherId: 'teacher-456',
+          pendingSchedule: true,
+          sessions: []
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching pending courses:', error);
+      throw error;
+    }
+  },
+
+  // Check for scheduling conflicts
+  checkConflicts: async (sessions) => {
+    try {
+      console.log(`Checking conflicts for ${sessions.length} sessions`);
+      // Example implementation using Firebase:
+      // const conflicts = [];
+      // for (const newSession of sessions) {
+      //   const sessionsRef = collection(firestore, 'sessions');
+      //   const sessionDate = new Date(newSession.date);
+      //
+      //   // Query all sessions on the same day
+      //   const startOfDay = new Date(sessionDate);
+      //   startOfDay.setHours(0, 0, 0, 0);
+      //
+      //   const endOfDay = new Date(sessionDate);
+      //   endOfDay.setHours(23, 59, 59, 999);
+      //
+      //   const q = query(sessionsRef,
+      //     where('date', '>=', startOfDay),
+      //     where('date', '<=', endOfDay)
+      //   );
+      //
+      //   const snapshot = await getDocs(q);
+      //
+      //   // Check each session for time overlap
+      //   snapshot.forEach(doc => {
+      //     const existingSession = doc.data();
+      //     if (hasTimeOverlap(newSession, existingSession)) {
+      //       conflicts.push({
+      //         id: doc.id,
+      //         ...existingSession,
+      //         courseName: existingSession.courseName || 'Unknown Course'
+      //       });
+      //     }
+      //   });
+      // }
+      // return conflicts;
+
+      // Simplified mock implementation
+      return [];
+    } catch (error) {
+      console.error('Error checking for conflicts:', error);
+      throw error;
+    }
+  }
+};
+
+// Helper function to check for time overlap
+function hasTimeOverlap(session1, session2) {
+  // Convert time strings to minutes for easier comparison
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const start1 = timeToMinutes(session1.startTime);
+  const end1 = timeToMinutes(session1.endTime);
+  const start2 = timeToMinutes(session2.startTime);
+  const end2 = timeToMinutes(session2.endTime);
+
+  // Check for overlap
+  return (start1 < end2 && end1 > start2);
+}
+
+// Add the API endpoints
+// Get pending courses that need scheduling
+app.get('/api/pending-schedule', async (req, res) => {
+  try {
+    // In a production environment, authenticate the request here
+    const pendingCourses = await scheduleOperations.getPendingCourses();
+    res.status(200).json(pendingCourses);
+  } catch (error) {
+    console.error('Error fetching pending schedules:', error);
+    res.status(500).json({ error: 'Failed to fetch pending schedules' });
+  }
+});
+
+// Mark a course as needing scheduling
+app.post('/api/pending-schedule', async (req, res) => {
+  try {
+    // In a production environment, authenticate the request here
+    const { courseId } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'Course ID is required' });
+    }
+
+    await scheduleOperations.markCourseForScheduling(courseId);
+    res.status(200).json({ message: 'Course marked for scheduling' });
+  } catch (error) {
+    console.error('Error marking course for scheduling:', error);
+    res.status(500).json({ error: 'Failed to mark course for scheduling' });
+  }
+});
+
+// Submit a schedule for a course
+app.post('/api/submit-schedule', async (req, res) => {
+  try {
+    // In a production environment, authenticate the request here
+    const { courseId, sessions } = req.body;
+
+    if (!courseId || !sessions) {
+      return res.status(400).json({ error: 'Course ID and sessions are required' });
+    }
+
+    await scheduleOperations.submitSchedule(courseId, sessions);
+    res.status(200).json({
+      message: 'Schedule submitted successfully',
+      courseId,
+      sessionCount: sessions.length
+    });
+  } catch (error) {
+    console.error('Error submitting schedule:', error);
+    res.status(500).json({ error: 'Failed to submit schedule' });
+  }
+});
+
+// Check for scheduling conflicts
+app.post('/api/check-conflicts', async (req, res) => {
+  try {
+    // In a production environment, authenticate the request here
+    const { sessions } = req.body;
+
+    if (!sessions || !Array.isArray(sessions)) {
+      return res.status(400).json({ error: 'Valid sessions array is required' });
+    }
+
+    const conflicts = await scheduleOperations.checkConflicts(sessions);
+    res.status(200).json(conflicts);
+  } catch (error) {
+    console.error('Error checking conflicts:', error);
+    res.status(500).json({ error: 'Failed to check for conflicts' });
   }
 });
 

@@ -231,4 +231,16 @@ export class AdminDashComponent {
   formatTime(time: string): string {
     return time;
   }
+
+  async scheduleCourse(courseId: string): Promise<void> {
+    const confirmed = await this.dialog.open('Do you want to send this course for scheduling?');
+    if (confirmed) {
+      this.spinner.show();
+      this.store.dispatch(CourseActions.markCourseForScheduling({ courseId }));
+    }
+  }
+
+  isCourseSchedulePending(course: Course): boolean {
+    return !!course.pendingSchedule;
+  }
 }

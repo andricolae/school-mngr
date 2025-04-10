@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, deleteDoc, doc, updateDoc, getDoc, arrayUnion, arrayRemove } from '@angular/fire/firestore';
-import { from, map, Observable, switchMap } from 'rxjs';
+import { catchError, from, map, Observable, switchMap, throwError } from 'rxjs';
 import { Course } from '../user.model';
 import { v4 as uuidv4 } from 'uuid';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class CourseService {
   private coursesCollection;
 
-  constructor(private firestore: Firestore) {
+  constructor(private firestore: Firestore, private http: HttpClient) {
     this.coursesCollection = collection(this.firestore, 'courses');
   }
 
@@ -164,4 +165,35 @@ getCourses(): Observable<Course[]> {
       })
     );
   }
+
+
+/**
+ * Mark a course as needing scheduling
+ * @param courseId The ID of the course to schedule
+ */
+markCourseForScheduling(courseId: string): Observable<any> {
+  return this.http.post('https://school-api-server.vercel.app/api/pending-schedule', { courseId })
+    .pipe(
+      catchError(error => {
+        console.error('Error marking course for scheduling:', error);
+        return throwError(() => new Error('Failed to mark course for scheduling'));
+      })
+    );
+}
+
+/**
+ * Check if a course schedule has been updated since it was marked for scheduling
+ * @param courseId The ID of the course to check
+ */
+checkScheduleStatus(courseId: string): Observable<boolean> {
+  return this.getCourse(courseId).pipe(
+    map(course => {
+      return !course!.pendingSchedule && course!.sessions! && course!.sessions!.length > 0;
+    }),
+    catchError(error => {
+      console.error('Error checking schedule status:', error);
+      return throwError(() => new Error('Failed to check schedule status'));
+    })
+  );
+}
 }
