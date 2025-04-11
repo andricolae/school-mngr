@@ -212,6 +212,9 @@
                 </span>
               </div>
               <div class="flex gap-2 items-center ml-auto">
+                @if (isCourseSchedulePending(course)) {
+                  <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending Schedule</span>
+                }
                 <button
                   (click)="viewStudentData(course)"
                   class="text-blue-600 hover:text-blue-800 transition"

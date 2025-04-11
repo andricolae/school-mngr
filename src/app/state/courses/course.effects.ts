@@ -1,16 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as CourseActions from './course.actions';
-import { catchError, map, mergeMap, of } from 'rxjs';
+import { catchError, map, mergeMap, of, tap } from 'rxjs';
 import { CourseService } from '../../core/services/course.service';
 import { Course } from '../../core/user.model';
 import { NotificationComponent } from '../../core/notification/notification.component';
+import { HttpClient } from '@angular/common/http';
+import { SpinnerService } from '../../core/services/spinner.service';
 
 @Injectable()
 export class CoursesEffects {
   constructor(
     private actions$: Actions,
+    private http: HttpClient,
     private courseService: CourseService,
+    private spinnerService: SpinnerService,
   ) {}
 
   loadCourses$ = createEffect(() =>
@@ -168,39 +172,34 @@ export class CoursesEffects {
     )
   );
 
-  // Add the following effects to the existing CoursesEffects class in school-mngr
+  markCourseForScheduling$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(CourseActions.markCourseForScheduling),
+      mergeMap(({ courseId }) =>
+        this.http.post<any>('https://school-api-server.vercel.app/api/mark-course-pending/', { courseId }).pipe(
+          map(() => CourseActions.markCourseForSchedulingSuccess({ courseId })),
+          catchError(error => {
+            console.error('Error marking course for scheduling:', error);
+            return of(CourseActions.markCourseForSchedulingFailure({ error }));
+          }),
+          tap(() => {
+            this.spinnerService.hide();
+            NotificationComponent.show("success", "Course successfully marked for scheduling")
+          })
+        )
+      )
+    );
+  });
 
-// Inside the CoursesEffects class after the existing effects
-
-// Effect for marking a course for scheduling
-markCourseForScheduling$ = createEffect(() =>
-  this.actions$.pipe(
-    ofType(CourseActions.markCourseForScheduling),
-    mergeMap(({ courseId }) =>
-      this.courseService.markCourseForScheduling(courseId).pipe(
-        map(() => {
-          NotificationComponent.show('success', 'Course has been sent for scheduling');
-          return CourseActions.markCourseForSchedulingSuccess({ courseId });
-        }),
-        catchError((error) => {
-          NotificationComponent.show('alert', `Failed to schedule course: ${error.message}`);
-          return of(CourseActions.markCourseForSchedulingFail({ error: error.message }));
-        })
+  checkScheduleStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CourseActions.checkScheduleStatus),
+      mergeMap(({ courseId }) =>
+        this.courseService.checkScheduleStatus(courseId).pipe(
+          map((isScheduled) => CourseActions.checkScheduleStatusSuccess({ courseId, isScheduled })),
+          catchError((error) => of(CourseActions.checkScheduleStatusFail({ error: error.message })))
+        )
       )
     )
-  )
-);
-
-// Effect for checking if a course's schedule has been updated
-checkScheduleStatus$ = createEffect(() =>
-  this.actions$.pipe(
-    ofType(CourseActions.checkScheduleStatus),
-    mergeMap(({ courseId }) =>
-      this.courseService.checkScheduleStatus(courseId).pipe(
-        map((isScheduled) => CourseActions.checkScheduleStatusSuccess({ courseId, isScheduled })),
-        catchError((error) => of(CourseActions.checkScheduleStatusFail({ error: error.message })))
-      )
-    )
-  )
-);
+  );
 }
