@@ -407,7 +407,7 @@ app.get('/', (req, res) => {
         <style>
           body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
@@ -429,21 +429,28 @@ app.get('/', (req, res) => {
       </head>
       <body>
         <h1>School Manager API Server</h1>
-        <p>The API server is running correctly. Below are some test endpoints you can use to verify functionality:</p>
+        <p>Welcome to the School Manager API. Below is a list of available endpoints and their purposes:</p>
 
-        <h2>Test Endpoints</h2>
-        <div class="endpoint">
-          <code>GET /api/health</code> - Health check endpoint
-        </div>
-        <div class="endpoint">
-          <code>GET /api/info</code> - Server information
-        </div>
-        <div class="endpoint">
-          <code>GET /api/firebase-debug</code> - Firebase connection debug info
-        </div>
-        <div class="endpoint">
-          <code>GET /api/create-test-notification</code> - Create a test notification
-        </div>
+        <h2>Health & Info</h2>
+        <div class="endpoint"><code>GET /api/health</code> - Health check endpoint</div>
+        <div class="endpoint"><code>GET /api/info</code> - General server and Firebase info</div>
+        <div class="endpoint"><code>GET /api/firebase-debug</code> - Firebase environment variable status</div>
+        <div class="endpoint"><code>GET /api/debug-private-key</code> - Debug your Firebase private key</div>
+        <div class="endpoint"><code>GET /api/environment</code> - View Node.js, Vercel, memory, uptime info</div>
+
+        <h2>Notifications</h2>
+        <div class="endpoint"><code>GET /api/create-test-notification</code> - Create a sample test notification in Firestore</div>
+
+        <h2>Courses - Scheduling</h2>
+        <div class="endpoint"><code>GET /api/get-pending</code> - Fetch courses with <code>pendingSchedule = true</code></div>
+        <div class="endpoint"><code>GET /api/pending-schedule</code> - Mock: Get hardcoded pending schedule list</div>
+        <div class="endpoint"><code>POST /api/pending-schedule</code> - Mark a course for scheduling (mocked)</div>
+        <div class="endpoint"><code>POST /api/submit-schedule</code> - Submit sessions for a course schedule</div>
+        <div class="endpoint"><code>POST /api/check-conflicts</code> - Check for session time conflicts</div>
+        <div class="endpoint"><code>POST /api/mark-course-pending</code> - Mark a course's <code>pendingSchedule</code> field as true in Firestore</div>
+        <div class="endpoint"><code>GET /api/mark-course-pending/:courseId</code> - Same as above, via GET</div>
+
+        <p>All endpoints return JSON responses and follow RESTful conventions.</p>
       </body>
     </html>
   `);
