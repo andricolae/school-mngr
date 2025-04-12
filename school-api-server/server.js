@@ -28,6 +28,70 @@ const simplifiedFirebase = {
     }
   },
 
+  async getDocument(collection, docId) {
+    try {
+      console.log(`Getting document from ${collection}/${docId}`);
+
+      const projectId = process.env.FIREBASE_PROJECT_ID;
+
+      return new Promise((resolve, reject) => {
+        const options = {
+          hostname: 'firestore.googleapis.com',
+          path: `/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Firebase-Client': 'rest-api'
+          }
+        };
+
+        const req = https.request(options, (res) => {
+          let responseData = '';
+
+          res.on('data', (chunk) => {
+            responseData += chunk;
+          });
+
+          res.on('end', () => {
+            if (res.statusCode === 404) {
+              console.log(`Document ${collection}/${docId} not found`);
+              resolve(null);
+            } else if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const result = JSON.parse(responseData);
+                console.log(`Document ${collection}/${docId} retrieved successfully`);
+
+                // Use your existing _firestoreToObject helper
+                const data = this._firestoreToObject(result.fields || {});
+
+                resolve({
+                  id: docId,
+                  ...data
+                });
+              } catch (parseError) {
+                console.error('Error parsing Firestore response:', parseError);
+                reject(parseError);
+              }
+            } else {
+              console.error(`HTTP Error ${res.statusCode} getting document:`, responseData);
+              reject(new Error(`HTTP Error ${res.statusCode}: ${responseData}`));
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          console.error('Request error:', error);
+          reject(error);
+        });
+
+        req.end();
+      });
+    } catch (error) {
+      console.error(`Error getting document ${docId} from ${collection}:`, error);
+      throw error;
+    }
+  },
+
   async setDocument(collection, docId, data) {
     try {
       return new Promise((resolve, reject) => {
@@ -726,23 +790,140 @@ app.post('/api/pending-schedule', async (req, res) => {
   }
 });
 
+// app.post('/api/submit-schedule', async (req, res) => {
+//   try {
+//     const { courseId, sessions } = req.body;
+
+//     if (!courseId || !sessions) {
+//       return res.status(400).json({ error: 'Course ID and sessions are required' });
+//     }
+
+//     console.log(`Processing schedule submission for course ${courseId} with ${sessions.length} sessions`);
+
+//     const processedSessions = sessions.map(session => {
+//       return {
+//         ...session,
+//         date: session.date
+//       };
+//     });
+
+//   //   await scheduleOperations.submitSchedule(courseId, sessions);
+//   //   res.status(200).json({
+//   //     message: 'Schedule submitted successfully',
+//   //     courseId,
+//   //     sessionCount: sessions.length
+//   //   });
+//   // } catch (error) {
+//   //   console.error('Error submitting schedule:', error);
+//   //   res.status(500).json({ error: 'Failed to submit schedule' });
+//   // }
+
+//     try {
+//       await simplifiedFirebase.setDocument('courses', courseId, {
+//         sessions: processedSessions,
+//         pendingSchedule: false
+//       });
+
+//       console.log(`Schedule saved successfully for course ${courseId}`);
+
+//       res.status(200).json({
+//         success: true,
+//         message: 'Schedule submitted successfully',
+//         courseId,
+//         sessionCount: sessions.length
+//       });
+//     } catch (error) {
+//       console.error('Error updating course in Firebase:', error);
+//       throw error;
+//     }
+//   } catch (error) {
+//     console.error('Error submitting schedule:', error);
+//     res.status(500).json({ error: 'Failed to submit schedule', details: error.message });
+//   }
+// });
+
+// Updated endpoint in server.js that preserves existing course data
 app.post('/api/submit-schedule', async (req, res) => {
   try {
+    console.log('Received schedule submission request');
+
     const { courseId, sessions } = req.body;
 
-    if (!courseId || !sessions) {
-      return res.status(400).json({ error: 'Course ID and sessions are required' });
+    if (!courseId || !sessions || !Array.isArray(sessions)) {
+      console.log('Invalid request parameters:', { courseId, sessionsProvided: !!sessions, isArray: Array.isArray(sessions) });
+      return res.status(400).json({
+        error: 'Invalid request parameters',
+        details: 'Valid courseId and sessions array are required'
+      });
     }
 
-    await scheduleOperations.submitSchedule(courseId, sessions);
-    res.status(200).json({
-      message: 'Schedule submitted successfully',
-      courseId,
-      sessionCount: sessions.length
-    });
+    console.log(`Processing schedule for course ${courseId} with ${sessions.length} sessions`);
+
+    try {
+      // First, get the existing course document
+      const existingCourse = await simplifiedFirebase.getDocument('courses', courseId);
+
+      if (!existingCourse) {
+        return res.status(404).json({
+          error: 'Course not found',
+          details: `No course exists with ID ${courseId}`
+        });
+      }
+
+      console.log('Found existing course with ID:', courseId);
+
+      // Process sessions to ensure dates are in a format Firebase can handle
+      const processedSessions = sessions.map(session => {
+        // If date is a Date object or string, ensure it's converted to a format Firebase accepts
+        let processedDate = session.date;
+        if (session.date instanceof Date || typeof session.date === 'string') {
+          try {
+            // Convert to ISO string for consistency
+            const dateObj = new Date(session.date);
+            processedDate = dateObj.toISOString();
+          } catch (dateError) {
+            console.error('Error processing date:', dateError);
+            processedDate = session.date;
+          }
+        }
+
+        return {
+          ...session,
+          date: processedDate
+        };
+      });
+
+      // Create an updated course object that merges existing data with new data
+      const updatedCourse = {
+        ...existingCourse,       // Preserve all existing fields
+        sessions: processedSessions,  // Update sessions field
+        pendingSchedule: false        // Update pendingSchedule field
+      };
+
+      // Update the document using setDocument
+      await simplifiedFirebase.setDocument('courses', courseId, updatedCourse);
+
+      console.log(`Successfully scheduled course ${courseId}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Course schedule saved successfully',
+        courseId,
+        sessionCount: sessions.length
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      res.status(500).json({
+        error: 'Database operation failed',
+        details: dbError.message
+      });
+    }
   } catch (error) {
-    console.error('Error submitting schedule:', error);
-    res.status(500).json({ error: 'Failed to submit schedule' });
+    console.error('Schedule submission error:', error);
+    res.status(500).json({
+      error: 'Failed to process schedule submission',
+      details: error.message
+    });
   }
 });
 

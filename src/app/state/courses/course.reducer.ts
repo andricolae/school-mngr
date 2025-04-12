@@ -170,71 +170,50 @@ export const coursesReducer = createReducer(
     };
   }),
 
-  // Add the following to the existing coursesReducer in school-mngr
-
-// Inside the coursesReducer, add these reducer handlers after the existing ones
-
-// Handle marking a course for scheduling
-on(CourseActions.markCourseForScheduling, (state) => ({
-  ...state,
-  loading: true
-})),
-
-on(CourseActions.markCourseForSchedulingSuccess, (state, { courseId }) => {
-  const updatedCourses = state.courses.map(course => {
-    if (course.id === courseId) {
-      return {
-        ...course,
-        pendingSchedule: true
-      };
-    }
-    return course;
-  });
-
-  return {
+  on(CourseActions.markCourseForScheduling, (state) => ({
     ...state,
-    courses: updatedCourses,
-    loading: false
-  };
-}),
+    loading: true
+  })),
 
-on(CourseActions.markCourseForSchedulingFail, (state, { error }) => ({
-  ...state,
-  error,
-  loading: false
-})),
+  on(CourseActions.markCourseForSchedulingSuccess, (state, { courseId }) => {
+    const updatedCourses = state.courses.map(course =>
+      course.id === courseId ? { ...course, pendingSchedule: true } : course
+    );
 
-// Handle checking schedule status
-on(CourseActions.checkScheduleStatus, (state) => ({
-  ...state,
-  loading: true
-})),
+    return {
+      ...state,
+      courses: updatedCourses
+    };
+  }),
 
-on(CourseActions.checkScheduleStatusSuccess, (state, { courseId, isScheduled }) => {
-  // If schedule was updated, we want to reload the course to get the latest
-  // But for now, just update the pendingSchedule flag
-  const updatedCourses = state.courses.map(course => {
-    if (course.id === courseId && isScheduled) {
-      return {
-        ...course,
-        pendingSchedule: false
-      };
-    }
-    return course;
-  });
-
-  return {
+  on(CourseActions.checkScheduleStatus, (state) => ({
     ...state,
-    courses: updatedCourses,
-    loading: false
-  };
-}),
+    loading: true
+  })),
 
-on(CourseActions.checkScheduleStatusFail, (state, { error }) => ({
-  ...state,
-  error,
-  loading: false
-}))
+  on(CourseActions.checkScheduleStatusSuccess, (state, { courseId, isScheduled }) => {
+    const updatedCourses = state.courses.map(course => {
+      if (course.id === courseId && isScheduled) {
+        return {
+          ...course,
+          pendingSchedule: false
+        };
+      }
+      return course;
+    });
+
+    return {
+      ...state,
+      courses: updatedCourses,
+      loading: false
+    };
+  }),
+
+  on(CourseActions.checkScheduleStatusFail, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
+  }))
 );
 
 
