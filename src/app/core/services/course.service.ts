@@ -16,37 +16,37 @@ export class CourseService {
   }
 
 
-getCourses(): Observable<Course[]> {
-  return collectionData(this.coursesCollection, { idField: 'id' }).pipe(
-    map(courses => {
-      return courses.map(course => {
-        if (course['sessions']) {
-          course['sessions'] = course['sessions'].map((session: any) => {
-            if (session.date && typeof session.date.toDate === 'function') {
-              return {
-                ...session,
-                date: session.date.toDate()
-              };
-            }
-            return session;
-          });
-        } else {
-          course['sessions'] = [];
-        }
+  getCourses(): Observable<Course[]> {
+    return collectionData(this.coursesCollection, { idField: 'id' }).pipe(
+      map(courses => {
+        return courses.map(course => {
+          if (course['sessions']) {
+            course['sessions'] = course['sessions'].map((session: any) => {
+              if (session.date && typeof session.date.toDate === 'function') {
+                return {
+                  ...session,
+                  date: session.date.toDate()
+                };
+              }
+              return session;
+            });
+          } else {
+            course['sessions'] = [];
+          }
 
-        if (!course['studentGrades']) {
-          course['studentGrades'] = {};
-        }
+          if (!course['studentGrades']) {
+            course['studentGrades'] = {};
+          }
 
-        if (!course['studentAttendance']) {
-          course['studentAttendance'] = {};
-        }
+          if (!course['studentAttendance']) {
+            course['studentAttendance'] = {};
+          }
 
-        return course as Course;
-      });
-    })
-  ) as Observable<Course[]>;
-}
+          return course as Course;
+        });
+      })
+    ) as Observable<Course[]>;
+  }
 
   getCourse(id: string): Observable<Course | undefined> {
     const courseDoc = doc(this.firestore, `courses/${id}`);
@@ -103,9 +103,31 @@ getCourses(): Observable<Course[]> {
 
   unenrollStudent(courseId: string, studentId: string): Observable<void> {
     const courseDoc = doc(this.firestore, `courses/${courseId}`);
-    return from(
-      updateDoc(courseDoc, {
-        enrolledStudents: arrayRemove(studentId)
+
+    return from(getDoc(courseDoc)).pipe(
+      switchMap(docSnap => {
+        if (docSnap.exists()) {
+          const courseData = docSnap.data();
+
+          const updatedData: any = {
+            enrolledStudents: arrayRemove(studentId)
+          };
+
+          if (courseData['studentGrades'] && courseData['studentGrades'][studentId]) {
+            const updatedGrades = { ...courseData['studentGrades'] };
+            delete updatedGrades[studentId];
+            updatedData.studentGrades = updatedGrades;
+          }
+
+          if (courseData['studentAttendance'] && courseData['studentAttendance'][studentId]) {
+            const updatedAttendance = { ...courseData['studentAttendance'] };
+            delete updatedAttendance[studentId];
+            updatedData.studentAttendance = updatedAttendance;
+          }
+
+          return from(updateDoc(courseDoc, updatedData));
+        }
+        throw new Error('Course not found');
       })
     );
   }
@@ -166,34 +188,25 @@ getCourses(): Observable<Course[]> {
     );
   }
 
+  markCourseForScheduling(courseId: string): Observable<any> {
+    return this.http.post('https://school-api-server.vercel.app/api/pending-schedule', { courseId })
+      .pipe(
+        catchError(error => {
+          console.error('Error marking course for scheduling:', error);
+          return throwError(() => new Error('Failed to mark course for scheduling'));
+        })
+      );
+  }
 
-/**
- * Mark a course as needing scheduling
- * @param courseId The ID of the course to schedule
- */
-markCourseForScheduling(courseId: string): Observable<any> {
-  return this.http.post('https://school-api-server.vercel.app/api/pending-schedule', { courseId })
-    .pipe(
+  checkScheduleStatus(courseId: string): Observable<boolean> {
+    return this.getCourse(courseId).pipe(
+      map(course => {
+        return !course!.pendingSchedule && course!.sessions! && course!.sessions!.length > 0;
+      }),
       catchError(error => {
-        console.error('Error marking course for scheduling:', error);
-        return throwError(() => new Error('Failed to mark course for scheduling'));
+        console.error('Error checking schedule status:', error);
+        return throwError(() => new Error('Failed to check schedule status'));
       })
     );
-}
-
-/**
- * Check if a course schedule has been updated since it was marked for scheduling
- * @param courseId The ID of the course to check
- */
-checkScheduleStatus(courseId: string): Observable<boolean> {
-  return this.getCourse(courseId).pipe(
-    map(course => {
-      return !course!.pendingSchedule && course!.sessions! && course!.sessions!.length > 0;
-    }),
-    catchError(error => {
-      console.error('Error checking schedule status:', error);
-      return throwError(() => new Error('Failed to check schedule status'));
-    })
-  );
-}
+  }
 }
