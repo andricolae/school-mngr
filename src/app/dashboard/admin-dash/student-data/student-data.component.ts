@@ -25,7 +25,6 @@ export class StudentDataComponent {
     private store: Store,
     private spinner: SpinnerService
   ) {
-    // Initialize with empty observables - will be properly set in ngOnInit
     this.course$ = this.store.select(CourseSelectors.selectCourseById(''));
     this.students$ = combineLatest([
       this.store.select(CourseSelectors.selectCourseById('')),
@@ -37,12 +36,10 @@ export class StudentDataComponent {
         return course.enrolledStudents.map(studentId => {
           const student = users.find(u => u.id === studentId);
 
-          // Get student grades
           const grades = course.studentGrades && course.studentGrades[studentId]
             ? [...course.studentGrades[studentId]]
             : [];
 
-          // Get attendance info
           const attendanceMap = course.studentAttendance?.[studentId] || {};
           const attendanceCount = Object.values(attendanceMap).filter(Boolean).length;
           const sessionsCount = course.sessions?.length || 0;
@@ -70,7 +67,6 @@ export class StudentDataComponent {
 
   ngOnInit(): void {
     this.spinner.show();
-    // Re-initialize observables with courseId from @Input
     this.course$ = this.store.select(CourseSelectors.selectCourseById(this.courseId));
     this.students$ = combineLatest([
       this.store.select(CourseSelectors.selectCourseById(this.courseId)),
@@ -82,12 +78,10 @@ export class StudentDataComponent {
         return course.enrolledStudents.map(studentId => {
           const student = users.find(u => u.id === studentId);
 
-          // Get student grades
           const grades = course.studentGrades && course.studentGrades[studentId]
             ? [...course.studentGrades[studentId]]
             : [];
 
-          // Get attendance info
           const attendanceMap = course.studentAttendance?.[studentId] || {};
           const attendanceCount = Object.values(attendanceMap).filter(Boolean).length;
           const sessionsCount = course.sessions?.length || 0;

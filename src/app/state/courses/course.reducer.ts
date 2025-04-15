@@ -98,16 +98,28 @@ export const coursesReducer = createReducer(
   })),
 
   on(CourseActions.unenrollStudentSuccess, (state, { courseId, studentId }) => ({
-      ...state,
-      courses: state.courses.map(course => {
-          if (course.id === courseId && course.enrolledStudents) {
-              return {
-                  ...course,
-                  enrolledStudents: course.enrolledStudents.filter(id => id !== studentId)
-              };
-          }
-          return course;
-      })
+    ...state,
+    courses: state.courses.map(course => {
+      if (course.id === courseId) {
+        const updatedCourse = {
+          ...course,
+          enrolledStudents: course.enrolledStudents?.filter(id => id !== studentId) || []
+        };
+
+        if (updatedCourse.studentGrades && updatedCourse.studentGrades[studentId]) {
+          updatedCourse.studentGrades = { ...updatedCourse.studentGrades };
+          delete updatedCourse.studentGrades[studentId];
+        }
+
+        if (updatedCourse.studentAttendance && updatedCourse.studentAttendance[studentId]) {
+          updatedCourse.studentAttendance = { ...updatedCourse.studentAttendance };
+          delete updatedCourse.studentAttendance[studentId];
+        }
+
+        return updatedCourse;
+      }
+      return course;
+    })
   })),
 
   on(CourseActions.addStudentGradeSuccess, (state, { courseId, studentId, grade }) => {

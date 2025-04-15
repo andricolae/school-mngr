@@ -61,7 +61,6 @@ const simplifiedFirebase = {
                 const result = JSON.parse(responseData);
                 console.log(`Document ${collection}/${docId} retrieved successfully`);
 
-                // Use your existing _firestoreToObject helper
                 const data = this._firestoreToObject(result.fields || {});
 
                 resolve({
@@ -790,59 +789,6 @@ app.post('/api/pending-schedule', async (req, res) => {
   }
 });
 
-// app.post('/api/submit-schedule', async (req, res) => {
-//   try {
-//     const { courseId, sessions } = req.body;
-
-//     if (!courseId || !sessions) {
-//       return res.status(400).json({ error: 'Course ID and sessions are required' });
-//     }
-
-//     console.log(`Processing schedule submission for course ${courseId} with ${sessions.length} sessions`);
-
-//     const processedSessions = sessions.map(session => {
-//       return {
-//         ...session,
-//         date: session.date
-//       };
-//     });
-
-//   //   await scheduleOperations.submitSchedule(courseId, sessions);
-//   //   res.status(200).json({
-//   //     message: 'Schedule submitted successfully',
-//   //     courseId,
-//   //     sessionCount: sessions.length
-//   //   });
-//   // } catch (error) {
-//   //   console.error('Error submitting schedule:', error);
-//   //   res.status(500).json({ error: 'Failed to submit schedule' });
-//   // }
-
-//     try {
-//       await simplifiedFirebase.setDocument('courses', courseId, {
-//         sessions: processedSessions,
-//         pendingSchedule: false
-//       });
-
-//       console.log(`Schedule saved successfully for course ${courseId}`);
-
-//       res.status(200).json({
-//         success: true,
-//         message: 'Schedule submitted successfully',
-//         courseId,
-//         sessionCount: sessions.length
-//       });
-//     } catch (error) {
-//       console.error('Error updating course in Firebase:', error);
-//       throw error;
-//     }
-//   } catch (error) {
-//     console.error('Error submitting schedule:', error);
-//     res.status(500).json({ error: 'Failed to submit schedule', details: error.message });
-//   }
-// });
-
-// Updated endpoint in server.js that preserves existing course data
 app.post('/api/submit-schedule', async (req, res) => {
   try {
     console.log('Received schedule submission request');
@@ -860,7 +806,6 @@ app.post('/api/submit-schedule', async (req, res) => {
     console.log(`Processing schedule for course ${courseId} with ${sessions.length} sessions`);
 
     try {
-      // First, get the existing course document
       const existingCourse = await simplifiedFirebase.getDocument('courses', courseId);
 
       if (!existingCourse) {
@@ -872,13 +817,10 @@ app.post('/api/submit-schedule', async (req, res) => {
 
       console.log('Found existing course with ID:', courseId);
 
-      // Process sessions to ensure dates are in a format Firebase can handle
       const processedSessions = sessions.map(session => {
-        // If date is a Date object or string, ensure it's converted to a format Firebase accepts
         let processedDate = session.date;
         if (session.date instanceof Date || typeof session.date === 'string') {
           try {
-            // Convert to ISO string for consistency
             const dateObj = new Date(session.date);
             processedDate = dateObj.toISOString();
           } catch (dateError) {
@@ -893,14 +835,12 @@ app.post('/api/submit-schedule', async (req, res) => {
         };
       });
 
-      // Create an updated course object that merges existing data with new data
       const updatedCourse = {
-        ...existingCourse,       // Preserve all existing fields
-        sessions: processedSessions,  // Update sessions field
-        pendingSchedule: false        // Update pendingSchedule field
+        ...existingCourse,
+        sessions: processedSessions,
+        pendingSchedule: false
       };
 
-      // Update the document using setDocument
       await simplifiedFirebase.setDocument('courses', courseId, updatedCourse);
 
       console.log(`Successfully scheduled course ${courseId}`);
