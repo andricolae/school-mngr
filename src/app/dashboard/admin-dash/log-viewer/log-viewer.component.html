@@ -1,23 +1,69 @@
-<div class="min-h-screen bg-gray-100 py-6 px-4">
+<div class="min-h-screen bg-gray-50 py-6 px-4">
   <app-spinner />
 
-  <h1 class="text-2xl font-semibold text-gray-800 mb-6">System Logs</h1>
+  <div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">System Logs</h1>
+      <div class="flex gap-2">
+        <button
+          (click)="exportCsv()"
+          class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center gap-1 text-sm transition-colors"
+          title="Export as CSV">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          CSV
+        </button>
+        <button
+          (click)="exportAsJson()"
+          class="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center gap-1 text-sm transition-colors"
+          title="Export as JSON">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          JSON
+        </button>
+      </div>
+    </div>
 
-  <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
-    <div class="p-4 border-b bg-gray-50">
-      <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+      <div class="p-4 border-b bg-gray-50 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex items-center gap-2">
-          <h2 class="text-lg font-medium text-gray-700">Log Entries</h2>
-          <span class="text-sm text-gray-500">
+          <h2 class="text-lg font-semibold text-gray-700">Log Entries</h2>
+          <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
             {{ filteredRowData.length }} entries
           </span>
         </div>
 
         <div class="flex flex-wrap gap-3">
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="filterLogs()"
+              placeholder="Search logs..."
+              class="pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 w-64"
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-2 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            @if (searchTerm) {
+              <button
+                (click)="clearSearch()"
+                class="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                title="Clear search">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            }
+          </div>
+
           <select
             [(ngModel)]="selectedCategory"
             (change)="filterLogs()"
-            class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="pl-3 pr-8 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white"
+            title="Filter by category"
           >
             <option [value]="''">All Categories</option>
             @for (category of categories; track category) {
@@ -28,7 +74,8 @@
           <select
             [(ngModel)]="selectedTimeRange"
             (change)="filterLogs()"
-            class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="pl-3 pr-8 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white"
+            title="Filter by time range"
           >
             <option value="1h">Last Hour</option>
             <option value="6h">Last 6 Hours</option>
@@ -40,22 +87,38 @@
 
           <button
             (click)="refreshLogs()"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
+            title="Refresh logs"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             Refresh
           </button>
         </div>
       </div>
-    </div>
 
-    <div class="ag-theme-alpine w-full" style="height: 70vh;">
-      <ag-grid-angular
-        [gridOptions]="gridOptions"
-        [columnDefs]="columnDefs"
-        [rowData]="filteredRowData"
-        class="w-full h-full"
-        domLayout="autoHeight"
-      ></ag-grid-angular>
+      @if ((error$ | async)) {
+        <div class="p-4 bg-red-50 border-b border-red-100">
+          <div class="flex items-center gap-2 text-red-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p>Error loading logs. Please try again.</p>
+          </div>
+        </div>
+      }
+
+      <div class="ag-theme-alpine w-full" style="height: calc(100vh - 230px); min-height: 500px">
+        <ag-grid-angular
+          [gridOptions]="gridOptions"
+          [columnDefs]="columnDefs"
+          [rowData]="filteredRowData"
+          (gridReady)="onGridReady($event)"
+          class="w-full h-full"
+          domLayout="normal"
+        ></ag-grid-angular>
+      </div>
     </div>
   </div>
 </div>
