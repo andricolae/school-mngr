@@ -52,3 +52,27 @@ export interface UserModel {
   fullName: string;
   role: string;
 }
+
+export interface LogEntry {
+  id?: string;
+  timestamp: number;
+  userId?: string;
+  userName?: string;
+  userRole?: string;
+  category: LogCategory;
+  action: string;
+  message?: string;
+  details?: any;
+}
+
+export enum LogCategory {
+  AUTH = 'AUTH',
+  NAVIGATION = 'NAVIGATION',
+  SCHEDULER = 'SCHEDULER',
+  SYSTEM = 'SYSTEM',
+  COURSE = 'COURSE',
+  STUDENT = 'STUDENT',
+  GRADE = 'GRADE',
+  ATTENDANCE = 'ATTENDANCE',
+  ADMIN = 'ADMIN'
+}

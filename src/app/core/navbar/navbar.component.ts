@@ -1,3 +1,4 @@
+import { LoggingService } from './../services/logging.service';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -17,7 +18,7 @@ export class NavbarComponent {
   userRole: string | null = null;
   private userSub!: Subscription;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(private router: Router, private authService: AuthService, private loggingService: LoggingService) {}
 
   ngOnInit() {
     this.userSub = this.authService.user.subscribe(user => {
@@ -48,6 +49,7 @@ export class NavbarComponent {
 
   navigateTo(route: string) {
     this.router.navigate([route]);
+    this.loggingService.logNavigation('PAGE_NAVIGATION', `User navigated to ${route}`);
   }
 
   logout() {
