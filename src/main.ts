@@ -15,19 +15,24 @@ import { UsersEffects } from './app/state/users/user.effects';
 import { usersReducer } from './app/state/users/user.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { isDevMode } from '@angular/core';
+import { logReducer } from './app/state/logs/log.reducer';
+import { LogEffects } from './app/state/logs/log.effects';
+import { AgGridModule } from 'ag-grid-angular';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    AgGridModule,
     provideRouter(routes),
     provideHttpClient(withFetch()),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideClientHydration(withEventReplay()),
-    provideStore({ courses: coursesReducer, users: usersReducer}),
+    provideStore({ courses: coursesReducer, users: usersReducer, logs: logReducer}),
     provideEffects([
       CoursesEffects,
-      UsersEffects
+      UsersEffects,
+      LogEffects
     ]),
     provideStoreDevtools({
       maxAge: 25,

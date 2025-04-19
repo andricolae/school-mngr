@@ -1,0 +1,224 @@
+/* .ag-theme-alpine {
+  --ag-font-size: 14px;
+  --ag-font-family: 'Inter', sans-serif;
+}
+
+.log-auth {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.log-grade {
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+.log-course {
+  background-color: rgba(245, 158, 11, 0.05);
+}
+
+.log-student {
+  background-color: rgba(139, 92, 246, 0.05);
+}
+
+.log-attendance {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.log-admin {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.category-auth {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.category-grade {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.category-course {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.category-student {
+  color: #8b5cf6;
+  font-weight: 500;
+}
+
+.category-attendance {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.category-admin {
+  color: #000000;
+  font-weight: 500;
+}
+
+.category-system {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.category-navigation {
+  color: #9333ea;
+  font-weight: 500;
+} */
+
+.ag-theme-alpine {
+  --ag-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ag-font-size: 14px;
+  --ag-header-background-color: #f9fafb;
+  --ag-header-foreground-color: #4b5563;
+  --ag-header-column-separator-display: none;
+  --ag-borders: none;
+  --ag-row-border-color: #e5e7eb;
+  --ag-row-hover-color: #f3f4f6;
+  --ag-selected-row-background-color: rgba(59, 130, 246, 0.1);
+  --ag-range-selection-border-color: #3b82f6;
+  --ag-range-selection-background-color: rgba(59, 130, 246, 0.2);
+  --ag-control-panel-background-color: #f9fafb;
+  --ag-side-button-selected-background-color: #e0e7ff;
+  --ag-checkbox-unchecked-color: #d1d5db;
+  --ag-checkbox-background-color: #fff;
+  --ag-checkbox-checked-color: #3b82f6;
+  --ag-border-radius: 8px;
+  --ag-row-height: 48px;
+  --ag-header-height: 48px;
+}
+
+.grid-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.category-auth {
+  color: #3b82f6;
+  font-weight: 500;
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-navigation {
+  color: #8b5cf6;
+  font-weight: 500;
+  background-color: rgba(139, 92, 246, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-system {
+  color: #6b7280;
+  font-weight: 500;
+  background-color: rgba(107, 114, 128, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-course {
+  color: #f59e0b;
+  font-weight: 500;
+  background-color: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-grade {
+  color: #10b981;
+  font-weight: 500;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-attendance {
+  color: #ef4444;
+  font-weight: 500;
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-admin {
+  color: #1f2937;
+  font-weight: 500;
+  background-color: rgba(31, 41, 55, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.category-student {
+  color: #7c3aed;
+  font-weight: 500;
+  background-color: rgba(124, 58, 237, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.action-cell {
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.time-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-main {
+  font-weight: 500;
+}
+
+.time-ago {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.message-cell {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.filter-toolbar {
+  display: flex;
+  gap: 8px;
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-select {
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  padding: 6px 12px;
+  background-color: white;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.filter-select:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  border-color: #3b82f6;
+}
+
+.refresh-button {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refresh-button:hover {
+  background-color: #2563eb;
+}
