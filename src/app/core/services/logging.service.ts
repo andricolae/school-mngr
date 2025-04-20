@@ -62,6 +62,14 @@ export class LoggingService {
     this.log(LogCategory.STUDENT, action, message, details);
   }
 
+  logTeacher(action: string, message: string, details?: any): void {
+    this.log(LogCategory.TEACHER, action, message, details);
+  }
+
+  logSchedule(action: string, message: string, details?: any): void {
+    this.log(LogCategory.SCHEDULER, action, message, details);
+  }
+
   logAdmin(action: string, message: string, details?: any): void {
     this.log(LogCategory.ADMIN, action, message, details);
   }

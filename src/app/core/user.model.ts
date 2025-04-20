@@ -74,5 +74,6 @@ export enum LogCategory {
   STUDENT = 'STUDENT',
   GRADE = 'GRADE',
   ATTENDANCE = 'ATTENDANCE',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
+  TEACHER = "TEACHER"
 }
