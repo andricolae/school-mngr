@@ -15,7 +15,8 @@
     "tailwind:init": "tailwindcss init",
     "serve:ssr:school-mngr": "node dist/school-mngr/server/server.mjs",
     "deploy:prepare": "npm run build:prod && npm run deploy:copy",
-    "deploy:copy": "node scripts/deploy.js"
+    "deploy:copy": "node scripts/deploy.js",
+    "postinstall": "npm install --legacy-peer-deps"
   },
   "private": true,
   "dependencies": {
