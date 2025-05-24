@@ -3,10 +3,10 @@ name: Run Angular Tests
 on:
   push:
     branches:
-      - main        # or your default branch
+      - tests        
   pull_request:
     branches:
-      - main        # run on PRs targeting main branch
+      - tests       
 
 jobs:
   test:
@@ -19,7 +19,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'   # or the version your project uses
+          node-version: '18'   
 
       - name: Install dependencies
         run: npm install
