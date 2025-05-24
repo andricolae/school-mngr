@@ -21,7 +21,7 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private spinner: SpinnerService) {}
+    private spinner: SpinnerService) { }
 
   ngOnInit() {
     this.authService.user.subscribe(user => {
@@ -42,6 +42,10 @@ export class LoginComponent {
         this.spinner.hide()
         console.log('User logged in!', response);
         this.router.navigate(['/home']);
+      },
+      error: err => {
+        this.spinner.hide();
+        NotificationComponent.show('alert', 'Login failed: ' + err.message);
       }
     });
   }

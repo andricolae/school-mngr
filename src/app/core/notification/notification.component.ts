@@ -6,6 +6,7 @@ type MessageType = 'alert' | 'notification' | 'success';
 @Component({
   selector: 'app-notification',
   imports: [NgClass],
+  standalone: true,
   templateUrl: './notification.component.html',
   styleUrl: './notification.component.css'
 })
